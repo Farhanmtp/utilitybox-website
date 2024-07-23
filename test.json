@@ -1,0 +1,225 @@
+{
+    "docusignDetails": {
+        "SecurityDetails": {
+            "LicenceCode": "B895EE64-D140-4C4B-B864-68A3560C383C",
+            "mascaradeuser": "Test User"
+        },
+        "WebhookUrl": "https:\/\/utilitybox-laravel.mtp\/webhooks\/docusign",
+        "AgentEmail": "farhan@utilitybox.org.uk",
+        "ItsAGasContract": false,
+        "MainDetailsData": [
+            {
+                "Key": "address 1",
+                "Value": "3, WINTERTON PLACE"
+            },
+            {
+                "Key": "address 4",
+                "Value": "LONDON"
+            },
+            {
+                "Key": "post code",
+                "Value": "SW10 0AH"
+            },
+            {
+                "Key": "job title",
+                "Value": "Director"
+            },
+            {
+                "Key": "email",
+                "Value": "mubashar.mtp@gmail.com"
+            },
+            {
+                "Key": "landline",
+                "Value": "023456677767"
+            },
+            {
+                "Key": "mobile",
+                "Value": "073456677767"
+            },
+            {
+                "Key": "date of birth",
+                "Value": "1979-08-01"
+            },
+            {
+                "Key": "billing address1",
+                "Value": "7, Perivale"
+            },
+            {
+                "Key": "billing address2",
+                "Value": "Devon Close"
+            },
+            {
+                "Key": "billing address3",
+                "Value": "Greenford"
+            },
+            {
+                "Key": "billing postcode",
+                "Value": "UB6 7DN"
+            },
+            {
+                "Key": "director dob",
+                "Value": "1979-08-01"
+            },
+            {
+                "Key": "pub company",
+                "Value": "ENERGYW!SE LTD"
+            },
+            {
+                "Key": "business type",
+                "Value": "Limited"
+            },
+            {
+                "Key": "company number",
+                "Value": "13985507"
+            },
+            {
+                "Key": "company address 1",
+                "Value": "7"
+            },
+            {
+                "Key": "company address 2",
+                "Value": "Devon Close"
+            },
+            {
+                "Key": "company address 4",
+                "Value": "Greenford"
+            },
+            {
+                "Key": "company post code",
+                "Value": "UB6 7DN"
+            },
+            {
+                "Key": "contact name",
+                "Value": "Nasir, Ahmad"
+            },
+            {
+                "Key": "director address1",
+                "Value": "3, WINTERTON PLACE"
+            },
+            {
+                "Key": "director address2",
+                "Value": "WINTERTON PLACE, LONDON"
+            },
+            {
+                "Key": "director postcode",
+                "Value": "SW10 0AH"
+            },
+            {
+                "Key": "director forename",
+                "Value": "Nasir"
+            },
+            {
+                "Key": "director surname",
+                "Value": "Ahmad"
+            },
+            {
+                "Key": "mpr 1",
+                "Value": "1200028089721"
+            },
+            {
+                "Key": "mpan top line 1",
+                "Value": "03801201"
+            },
+            {
+                "Key": "mpan bottom line 1",
+                "Value": "1200028089721"
+            },
+            {
+                "Key": "gas contract end date",
+                "Value": "2023-12-15"
+            },
+            {
+                "Key": "elec contract end date",
+                "Value": "2023-12-15"
+            },
+            {
+                "Key": "current gas supplier 1",
+                "Value": "British Gas Lite"
+            },
+            {
+                "Key": "current electric supplier 1",
+                "Value": "British Gas Lite"
+            },
+            {
+                "Key": "new supplier gas",
+                "Value": "British Gas Lite"
+            },
+            {
+                "Key": "new supplier electricity",
+                "Value": "British Gas Lite"
+            },
+            {
+                "Key": "gas new contract length",
+                "Value": 24
+            },
+            {
+                "Key": "elec new contract length",
+                "Value": 24
+            },
+            {
+                "Key": "payment method",
+                "Value": "FixedDirectDebit"
+            },
+            {
+                "Key": "kva",
+                "Value": "3000"
+            },
+            {
+                "Key": "dd start date",
+                "Value": "1970-01-01"
+            }
+        ],
+        "UsageRatesData": [
+            {
+                "Key": "dayusage",
+                "Value": "3000"
+            },
+            {
+                "Key": "nightusage",
+                "Value": "3000"
+            },
+            {
+                "Key": "eveandwendusage",
+                "Value": "3000"
+            }
+        ],
+        "AuxiliaryDetailsData": [
+            {
+                "Key": "MpanSerialNumber",
+                "Value": "S72A 13750"
+            },
+            {
+                "Key": "MprnSerialNumber",
+                "Value": "S72A 13750"
+            },
+            {
+                "Key": "ElectricityNewContractEndDate",
+                "Value": "2025-12-21"
+            },
+            {
+                "Key": "GasNewContractEndDate",
+                "Value": "2025-12-21"
+            },
+            {
+                "Key": "ContactTitle",
+                "Value": "Mr"
+            },
+            {
+                "Key": "BillingLandline",
+                "Value": "023456677767"
+            },
+            {
+                "Key": "BillingEmail",
+                "Value": "mubashar.mtp@gmail.com"
+            },
+            {
+                "Key": "BillingContactFirstName",
+                "Value": "Nasir"
+            },
+            {
+                "Key": "BillingContactLastName",
+                "Value": "Ahmad"
+            }
+        ]
+    }
+}

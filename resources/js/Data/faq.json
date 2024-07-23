@@ -1,0 +1,27 @@
+[
+    {
+        "id" : 1,
+        "title" : "How can utility management services benefit my business?",
+        "meta" : "Utility management services can benefit your business by optimising resource usage, identifying cost-saving opportunities, ensuring accurate billing, and implementing sustainable practices. Our services streamline operations, providing valuable insights and helping you make informed decisions to enhance efficiency and reduce expenses."
+    },
+    {
+        "id" : 2,
+        "title" : "What types of utilities do you manage?",
+        "meta" : "We manage a comprehensive range of utilities, including electricity and gas. Our expertise covers a spectrum of services, ensuring that your business can benefit from an integrated and holistic approach to utility management."
+    },
+    {
+        "id" : 3,
+        "title" : "How does your billing accuracy guarantee work?",
+        "meta" : "Our billing accuracy guarantee is based on rigorous auditing processes and advanced technology. We carefully review all utility bills to identify and rectify any errors. If inaccuracies are found, we work to correct them promptly, ensuring that you are billed only for the services you've consumed. Our commitment is to transparent and precise billing."
+    },
+    {
+        "id" : 4,
+        "title" : "Can you help my business become more sustainable in its utility usage?",
+        "meta" : "Absolutely. Sustainability is a core focus of our utility management services. We offer tailored strategies to reduce your environmental footprint, optimise energy usage, and implement eco-friendly practices. This not only aligns with corporate responsibility but often leads to significant cost savings as well."
+    },
+    {
+        "id": 5,
+        "title": "How does your Utility Management Provider work?",
+        "meta": "Utilitybox is a comprehensive solution where we take over the management of your utilities. This includes everything from monitoring usage and identifying areas for improvement to handling billing processes and ensuring compliance. With US, you gain a dedicated partner focused on maximising efficiency and minimising costs, allowing you to concentrate on your core business activities."     
+    }
+]
