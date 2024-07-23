@@ -4,26 +4,33 @@
             <label class="control-label">Payment Method</label>
             <select name="paymentDetail[method]" class="form-control">
                 <option value="">Select Job Title</option>
-                <option value="MonthlyDirectDebit"
+                <option value="Direct Debit"
+                    {{ in_array(data_get($deal,'paymentDetail.method') ,['DirectDebit','Direct Debit']) ? 'selected' :'' }} >
+                    Direct Debit
+                </option>
+                <option value="Monthly Direct Debit"
                     {{ in_array(data_get($deal,'paymentDetail.method') ,['MonthlyDirectDebit','DirectDebit','Direct Debit']) ? 'selected' :'' }} >
                     Monthly Direct Debit
                 </option>
-                <option value="FixedDirectDebit"
-                    {{ in_array(data_get($deal,'paymentDetail.method') ,['FixedDirectDebit']) ? 'selected' :'' }} >Fixed
-                    Direct Debit
+                <option value="Fixed Direct Debit"
+                    {{ in_array(data_get($deal,'paymentDetail.method') ,['FixedDirectDebit','Fixed Direct Debit']) ? 'selected' :'' }} >
+                    Fixed Direct Debit
                 </option>
-                <option value="VariableDirectDebit"
-                    {{ data_get($deal,'paymentDetail.method') == 'VariableDirectDebit' ? 'selected' :'' }} >Variable
-                    Direct Debit
+                <option value="Variable Direct Debit"
+                    {{ data_get($deal,'paymentDetail.method') == 'VariableDirectDebit' ? 'selected' :'' }} >
+                    Variable Direct Debit
                 </option>
-                <option value="ReceiptofBill"
-                    {{ data_get($deal,'paymentDetail.method') == 'ReceiptofBill' ? 'selected' :'' }} >Receipt of Bill
+                <option value="Receipt of Bill"
+                    {{ in_array(data_get($deal,'paymentDetail.method') ,['ReceiptofBill','Receipt of Bill']) ? 'selected' :'' }} >
+                    Receipt of Bill
                 </option>
                 <option value="Prepayment "
-                    {{ data_get($deal,'paymentDetail.method') == 'Prepayment ' ? 'selected' :'' }} >Prepayment
+                    {{ data_get($deal,'paymentDetail.method') == 'Prepayment ' ? 'selected' :'' }} >
+                    Prepayment
                 </option>
                 <option value="BACS "
-                    {{ data_get($deal,'paymentDetail.method') == 'BACS ' ? 'selected' :'' }} >BACS
+                    {{ data_get($deal,'paymentDetail.method') == 'BACS ' ? 'selected' :'' }} >
+                    BACS
                 </option>
             </select>
         </div>
@@ -86,64 +93,53 @@
 <hr>
 <h5>Bank Address:</h5>
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Number</label>
+            <label class="control-label">Address Line 1</label>
             <input class="form-control" type="text" name="bankAddress[buildingNumber]"
                    value="{{data_get($deal,'bankAddress.buildingNumber')}}">
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Name</label>
+            <label class="control-label">Address Line 2</label>
             <input class="form-control" type="text" name="bankAddress[buildingName]"
                    value="{{data_get($deal,'bankAddress.buildingName')}}">
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label">Sub-Building Name</label>
-            <input class="form-control" type="text" name="bankAddress[subBuildingName]"
-                   value="{{data_get($deal,'bankAddress.subBuildingName')}}">
-        </div>
-    </div>
-    <div class="col-md-6">
+    <div class="col-md-2">
         <div class="form-group">
             <label class="control-label">Thoroughfare Name</label>
             <input class="form-control" type="text" name="bankAddress[thoroughfareName]"
                    value="{{data_get($deal,'bankAddress.thoroughfareName')}}">
         </div>
     </div>
-    <div class="col-md-5">
+    <div class="col-md-3">
         <div class="form-group">
             <label class="control-label">County</label>
             <input class="form-control" type="text" name="bankAddress[county]"
                    value="{{data_get($deal,'bankAddress.county')}}">
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="form-group">
             <label class="control-label">Post Town</label>
             <input class="form-control" type="text" name="bankAddress[postTown]"
                    value="{{data_get($deal,'bankAddress.postTown')}}">
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">PostCode</label>
-                    <input class="form-control" type="text" name="bankAddress[postcode]"
-                           value="{{data_get($deal,'bankAddress.postcode')}}">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">PO Box</label>
-                    <input class="form-control" type="text" name="bankAddress[poBox]"
-                           value="{{data_get($deal,'bankAddress.poBox')}}">
-                </div>
-            </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PostCode</label>
+            <input class="form-control" type="text" name="bankAddress[postcode]"
+                   value="{{data_get($deal,'bankAddress.postcode')}}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PO Box</label>
+            <input class="form-control" type="text" name="bankAddress[poBox]"
+                   value="{{data_get($deal,'bankAddress.poBox')}}">
         </div>
     </div>
 </div>

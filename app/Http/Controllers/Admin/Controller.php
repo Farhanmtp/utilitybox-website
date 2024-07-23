@@ -21,12 +21,6 @@ class Controller extends BaseController
 
     public function setup()
     {
-        $class_name = str_replace('Controller', '', class_basename($this));
-
-        $class_name = Str::title(Str::snake($class_name, ' '));
-
-        $action = Route::current()->getActionMethod();
-
         view()->share('title', $this->getTitle());
     }
 

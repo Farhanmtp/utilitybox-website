@@ -1,13 +1,12 @@
-import GuestLayout from '@/Layouts/GuestLayout';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import {Head, useForm} from '@inertiajs/react';
+import {FormEventHandler} from 'react';
 import Layout from "@/Layouts/Layout";
 
-export default function ForgotPassword({ status }: { status?: string }) {
-    const { data, setData, post, processing, errors } = useForm({
+export default function ForgotPassword({status, warning}: { status?: string, warning?: string }) {
+    const {data, setData, post, processing, errors} = useForm({
         email: '',
     });
 
@@ -19,40 +18,43 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
     return (
         <Layout>
-            <Head title="Forgot Password" />
+            <Head title="Forgot Password"/>
 
-            <div className='container py-5'>
-                <h2 className='pb-4'><b>Forgot your password?</b> No problem. </h2>
-                <div className="mb-4 text-sm text-gray-600">
-                    Just let us know your email address and we will email you a password
-                    reset link that will allow you to choose a new one.
-                </div>
+            <div className="container">
+                <div className="row">
+                    <div className="col-sm-10 offset-sm-1 col-md-6 offset-md-3 pt-5 pb-5">
+                        <h2 className='pb-4'><b>Forgot your password?</b> No problem. </h2>
+                        <div className="mb-4 text-sm text-gray-600">
+                            Just let us know your email address and we will email you a password
+                            reset link that will allow you to choose a new one.
+                        </div>
 
-                {status && <div className="mb-4 font-medium text-sm text-green-600">{status}</div>}
+                        {status && <div className="mb-4 font-medium text-sm text-green-600">{status}</div>}
+                        {warning && <div className="mb-4 font-medium text-sm text-orange-700">{warning}</div>}
 
-                <form onSubmit={submit}>
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
+                        <form onSubmit={submit}>
+                            <TextInput
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                className="mt-1 block w-full"
+                                isFocused={true}
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                            />
 
-                    <InputError message={errors.email} className="mt-2" />
+                            <InputError message={errors.email} className="mt-2"/>
 
-                    <div className="flex items-center justify-end mt-4">
-                        <PrimaryButton className="ml-4" disabled={processing}>
-                            Email Password Reset Link
-                        </PrimaryButton>
+                            <div className="flex items-center justify-end mt-4">
+                                <PrimaryButton className="ml-4" disabled={processing}>
+                                    Email Password Reset Link
+                                </PrimaryButton>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
-
-            
         </Layout>
     );
 }

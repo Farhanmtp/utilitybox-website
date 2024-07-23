@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Traits\ActiveTrait;
+use App\Traits\UtilsTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    use HasFactory,ActiveTrait;
+    use HasFactory, ActiveTrait, UtilsTrait;
 
     protected $fillable = [
         'category_id',
@@ -27,8 +28,7 @@ class Post extends Model
         'status',
     ];
 
-    protected $appends = ['url','image_url','banner_url'];
-
+    protected $appends = ['url', 'image_url', 'banner_url'];
 
     public function category()
     {

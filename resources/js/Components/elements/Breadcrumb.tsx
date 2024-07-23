@@ -54,7 +54,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({items, activeCount}) => {
         {/* <BlueButton title='Sign Up' link='/register' /> */}
         </div>
     ) : (``)}
-        <nav id="breadcrumb" className="d-flex justify-content-center mb-5 rounded-md md-d-none" aria-label="Breadcrumb">
+        <nav id="breadcrumb" className="d-flex justify-content-center mb-5 rounded-md d-none d-sm-flex" aria-label="Breadcrumb">
             <ol className="breadcrumb">
                 {items.map((item, index) => (
                     <React.Fragment key={index}>

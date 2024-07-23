@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Observers\RoleObserver;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\UtilsTrait;
 use Spatie\Permission\Models\Role as OriginalRole;
 
 class Role extends OriginalRole
 {
-    use HasFactory;
+    use UtilsTrait;
 
     /**
      * System default roles
@@ -20,7 +20,6 @@ class Role extends OriginalRole
         'manager',
         'sales',
     ];
-
 
     protected static function boot()
     {

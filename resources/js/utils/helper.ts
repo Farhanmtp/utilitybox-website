@@ -1,15 +1,50 @@
 import moment from "moment/moment";
+import {AES, enc, lib} from 'crypto-js';
 
-export function setMask(string: any, visible = 3, mask = '*'): any {
+let CryptoJSAesConfig = {
+    stringify: function (cipherParams: any) {
+        let j = {b: cipherParams.ciphertext.toString(enc.Base64), i: null, s: null};
+        if (cipherParams.iv) j.i = cipherParams.iv.toString();
+        if (cipherParams.salt) j.s = cipherParams.salt.toString();
+        return JSON.stringify(j);
+    },
+    parse: function (jsonStr: any) {
+        const j = JSON.parse(jsonStr);
+        let cipherParams = lib.CipherParams.create({ciphertext: enc.Base64.parse(j.b)});
+        if (j.i) cipherParams.iv = enc.Hex.parse(j.i)
+        if (j.s) cipherParams.salt = enc.Hex.parse(j.s)
+        return cipherParams;
+    }
+}
+
+export function encryptAes(decrypted: any) {
+    let password = (new Date()).getFullYear().toString();
+    var encrypted = AES.encrypt(JSON.stringify(decrypted), password, {format: CryptoJSAesConfig});
+    return encrypted.toString();
+}
+
+export function decryptAes(encrypted: any) {
+    let password = (new Date()).getFullYear().toString();
+    let decrypted = AES.decrypt(encrypted, password, {format: CryptoJSAesConfig}).toString(enc.Utf8);
+    try {
+        return JSON.parse(decrypted);
+    } catch (e) {
+        return decrypted;
+    }
+}
+
+export function setMask(string: any, visible = 3, position = 'left'): any {
     const length = string.length;
+    const mask = '*';
 
     if (length <= (visible * 2)) {
         return string;
     }
 
-    const _prefix = string.substring(0, visible);
-    const _suffix = string.substring(length - visible);
-    const _mask = mask.repeat(length - (visible * 2));
+    const _prefix = position != 'left' ? string.substring(0, visible) : '';
+    const _suffix = position != 'right' ? string.substring(length - visible) : '';
+
+    const _mask = mask.repeat(length - (position == 'center' ? visible * 2 : visible));
 
     return `${_prefix}${_mask}${_suffix}`;
 };
@@ -136,7 +171,9 @@ export function dbDateFormat(date: any) {
  * @returns {string}
  */
 export const format_date = (date: any, format?: string, keepLocalTime = true) => {
-
+    if (!date) {
+        return '';
+    }
     if (format) {
         if (format.toLowerCase() == 'uk') {
             format = 'DD/MM/YYYY';

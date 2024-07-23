@@ -10,10 +10,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class CompaniesController extends ApiController
 {
 
     /**
+     * Companies Search
+     *
      * @param LoginRequest $request
      * @return \Illuminate\Http\JsonResponse
      */

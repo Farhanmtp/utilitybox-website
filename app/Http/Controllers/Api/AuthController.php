@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\DealResource;
-use App\Models\PowwrDeals;
+use App\Models\Deals;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -48,6 +49,8 @@ class AuthController extends ApiController
             'password' => Hash::make($request->password),
         ]);
 
+        event(new Registered($user));
+
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user,
@@ -85,7 +88,7 @@ class AuthController extends ApiController
         $email = $request->email;
 
         $user = User::select('id', 'first_name', 'last_name', 'email')->where('email', $email)->first();
-        $deals = PowwrDeals::with(['supplier'])->where(function ($query) use ($email) {
+        $deals = Deals::with(['supplier'])->where(function ($query) use ($email) {
             $query->where('customer_email', $email)->orWhere('customer->email', $email);
         })->where('status', 'pending')->get();
 

@@ -9,6 +9,10 @@ use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class DocumentController extends ApiController
 {
 

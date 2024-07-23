@@ -17,7 +17,7 @@ export default function Finalize({setData, dealData}: Props) {
                     to be contacted by post, email, or phone. Please be aware that the
                     default method for contacting you will be via email.
                 </p>
-                <p className='mb-2 text-semibold'>To finalize your supply application, you hereby agree to the following:</p>
+                <p className='mb-2 text-semibold'>To finalise your supply application, you hereby agree to the following:</p>
                 <ul className='mb-4'>
                     <li className='mb-2 flex items-center'><input required={true} type="checkbox" className='mr-2' onChange={setData} checked={dealData.consents?.authorised == 1} name='consents.authorised' value='1'/>You are authorised by your company to submit this supply application.</li>
                     <li className='mb-2 flex items-center'><input required={true} type="checkbox" className='mr-2' onChange={setData} checked={dealData.consents?.terms == 1} name='consents.terms' value='1'/>You have perused, comprehended, and accepted the <a className='ml-1 mr-1 text-medium text-blue' href='/terms-and-conditions'> Terms & Conditions </a> of Utility Box.</li>

@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\PowwrDeals;
+use App\Models\Deals;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +18,7 @@ class SendDocuSign implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(protected PowwrDeals $deal)
+    public function __construct(protected Deals $deal)
     {
         //
     }

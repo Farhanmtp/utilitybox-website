@@ -4,19 +4,11 @@ import {Head} from "@inertiajs/react";
 // import { Navbar } from "../Components/Navbar";
 // import {PageProps} from "@/types";
 
-interface Supplier {
-    name: string;
-    powwr_id: string;
-    logo?: string;
-}
 
-interface Props {
-    suppliers: Supplier[];
-}
 
 
 // eslint-disable-next-line react-refresh/only-export-components
-export default function PCW({suppliers}: Props) {
+export default function PCW() {
     return (
         <Layout>
             <Head>
@@ -37,9 +29,8 @@ export default function PCW({suppliers}: Props) {
                 `}
             </style>
             <div className="">
-                <Scgs suppliers={suppliers}/>
+                <Scgs />
             </div>
-
 
             {/* <div className="compare-nav">
             <Navbar />

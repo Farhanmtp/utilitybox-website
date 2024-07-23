@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PowwrSupplierCollection;
-use App\Models\PowwrDeals;
-use App\Models\PowwrSupplier;
+use App\Models\Deals;
+use App\Models\Suppliers;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -19,7 +18,7 @@ class ContractController extends Controller
     public function index(Request $request, $token_or_id = null)
     {
 
-        $apiSuplliers = PowwrSupplier::apiSuppliers();
+        $apiSuplliers = Suppliers::apiSuppliers();
         $pricechange = [];
         foreach ($apiSuplliers as $k => $v) {
             $plans = collect($v);
@@ -29,7 +28,6 @@ class ContractController extends Controller
             ];
         }
 
-        $suppliers = PowwrSupplier::select(['id', 'name', 'powwr_id', 'status', 'logo'])->get();
         $message = null;
         $deal = null;
 
@@ -37,19 +35,20 @@ class ContractController extends Controller
             try {
                 if (strlen($token_or_id) > 30) {
                     $decrypted = Crypt::decryptString($token_or_id);
-                    list($id, $email) = explode(',', $decrypted);
+                    list($id, $email) = array_pad(explode(',', $decrypted), 2, null);
 
-                    $deal = PowwrDeals::with('supplier')->find($id);
+                    $deal = Deals::with('supplier')->find($id);
 
-                    $verified = $this->verifyEmail($email, $deal);
-
-                    if ($verified) {
-                        $message = $verified['message'];
-                        $deal->user_id = $verified['user']->id;
-                        $deal->save();
+                    if ($email) {
+                        $verified = $this->verifyEmail($email, $deal);
+                        if ($verified && $deal->user_id != $verified['user']->id) {
+                            $message = $verified['message'];
+                            $deal->user_id = $verified['user']->id;
+                            $deal->save();
+                        }
                     }
                 } else {
-                    $deal = PowwrDeals::with('supplier')->where('id', $token_or_id)->first();
+                    $deal = Deals::with('supplier')->where('id', $token_or_id)->first();
                 }
             } catch (DecryptException $e) {
             }
@@ -59,7 +58,6 @@ class ContractController extends Controller
             'message' => $message,
             'deal' => $deal,
             'loggedin' => auth()->check(),
-            'suppliers' => (new PowwrSupplierCollection($suppliers))->toArray($request),
             'pricechange' => $pricechange
         ]);
     }
@@ -83,7 +81,13 @@ class ContractController extends Controller
                     $user->save();
                     $message = 'Your email successfully verified.';
                 }
+
+                if (!$user->hasVerifiedEmail()) {
+                    $user->markEmailAsVerified();
+                }
+
                 Auth::login($user);
+
                 return ['message' => $message, 'user' => $user];
             }
         } catch (DecryptException $e) {

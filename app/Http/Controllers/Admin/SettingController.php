@@ -26,9 +26,9 @@ class SettingController extends Controller
 
         $setting = Setting::where('key', $key)->first();
 
-        //dd($settings);
+        $settings = Setting::where('status', '1')->get();
 
-        return view('admin.settings.edit', compact('setting'));
+        return view('admin.settings.edit', compact('setting', 'settings'));
     }
 
     public function update(Request $request)

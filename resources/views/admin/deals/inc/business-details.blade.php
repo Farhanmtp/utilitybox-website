@@ -61,25 +61,19 @@
 <div class="company-details" style="display: {{ data_get($deal,'company.type') == 'LimitedLiabilityPartnership' ? 'none' :'block' }}">
     <hr>
     <div class="row company">
-        <div class="col-md-2">
+        <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Number</label>
+                <label class="control-label">Address Line 1</label>
                 <input class="form-control buildingNumber" type="text" name="company[buildingNumber]" id="companyBuildingNumber" value="{{data_get($deal,'company.buildingNumber')}}">
             </div>
         </div>
         <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Name</label>
+                <label class="control-label">Address Line 2</label>
                 <input class="form-control buildingName" type="text" name="company[buildingName]" id="companyBuildingName" value="{{data_get($deal,'company.buildingName')}}">
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="form-group">
-                <label class="control-label">Sub-Building Name</label>
-                <input class="form-control subBuildingName" type="text" name="company[subBuildingName]" id="companySubBuildingName" value="{{data_get($deal,'company.subBuildingName')}}">
-            </div>
-        </div>
-        <div class="col-md-5">
+        <div class="col-md-2">
             <div class="form-group">
                 <label class="control-label">Thoroughfare Name</label>
                 <input class="form-control thoroughfareName" type="text" name="company[thoroughfareName]" id="companyThoroughfareName" value="{{data_get($deal,'company.thoroughfareName')}}">
@@ -138,25 +132,19 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Number</label>
+                <label class="control-label">Address Line 1</label>
                 <input class="form-control" type="text" name="company[partner1][buildingNumber]" value="{{data_get($deal,'company.partner1.buildingNumber')}}">
             </div>
         </div>
         <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Name</label>
+                <label class="control-label">Address Line 2</label>
                 <input class="form-control" type="text" name="company[partner1][buildingName]" value="{{data_get($deal,'company.partner1.buildingName')}}">
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="form-group">
-                <label class="control-label">Sub-Building Name</label>
-                <input class="form-control" type="text" name="company[partner1][subBuildingName]" value="{{data_get($deal,'company.partner1.subBuildingName')}}">
-            </div>
-        </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <div class="form-group">
                 <label class="control-label">Thoroughfare Name</label>
                 <input class="form-control" type="text" name="company[partner1][thoroughfareName]" value="{{data_get($deal,'company.partner1.thoroughfareName')}}">
@@ -213,25 +201,19 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Number</label>
+                <label class="control-label">Address Line 1</label>
                 <input class="form-control" type="text" name="company[partner2][buildingNumber]" value="{{data_get($deal,'company.partner2.buildingNumber')}}">
             </div>
         </div>
         <div class="col-md-5">
             <div class="form-group">
-                <label class="control-label">Building Name</label>
+                <label class="control-label">Address Line 2</label>
                 <input class="form-control" type="text" name="company[partner2][buildingName]" value="{{data_get($deal,'company.partner2.buildingName')}}">
             </div>
         </div>
-        <div class="col-md-5">
-            <div class="form-group">
-                <label class="control-label">Sub-Building Name</label>
-                <input class="form-control" type="text" name="company[partner2][subBuildingName]" value="{{data_get($deal,'company.partner2.subBuildingName')}}">
-            </div>
-        </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <div class="form-group">
                 <label class="control-label">Thoroughfare Name</label>
                 <input class="form-control" type="text" name="company[partner2][thoroughfareName]" value="{{data_get($deal,'company.partner2.thoroughfareName')}}">
@@ -309,9 +291,9 @@
         function setCompanyAddress(company) {
             var name = company.title;
             var number = company?.number;
-            var buildingNumber = company?.address?.premises ?? '';
-            var buildingName = company?.address?.address_line_1 ?? '';
-            var subBuildingName = company?.address?.address_line_2 ?? '';
+            var premises = company?.address?.premises ?? '';
+            var buildingNumber = (premises ? premises + ', ' : '') + company?.address?.address_line_1 ?? '';
+            var buildingName = company?.address?.address_line_2 ?? '';
             var postTown = company?.address?.locality ?? company?.address?.address_line_2 ?? '';
             var county = company?.address?.region ?? company?.address?.locality;
             var postcode = company?.address?.postal_code;
@@ -322,7 +304,6 @@
             $("#companyNumber").val(number);
             $("#companyCounty").val(county);
             $("#companyPostcode").val(postcode);
-            $("#companySubBuildingName").val(subBuildingName);
             $("#companyBuildingName").val(buildingName);
             $("#companyBuildingNumber").val(buildingNumber);
             $("#companyThoroughfare").val(thoroughfareName);

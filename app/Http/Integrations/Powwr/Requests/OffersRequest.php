@@ -61,7 +61,7 @@ class OffersRequest extends Request implements HasBody
         ];
 
         $quoteDetails['Settings'] = [
-            //['key' => "ShowNoQuoteReason", "value" => "true"],
+            ['key' => "ShowNoQuoteReason", "value" => "true"],
             ['key' => "CreditScore", "value" => "50"]
         ];
 

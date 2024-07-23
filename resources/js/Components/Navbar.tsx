@@ -1,14 +1,22 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Link, usePage} from '@inertiajs/react';
-import {Container, Image, Nav, Navbar as NavbarBs} from 'react-bootstrap';
-import {PageProps} from "@/types";
-import {useGlobalState} from '@/Layouts/elements/PopupContext';
+import { useEffect, useRef, useState } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { Container, Image, Nav, NavDropdown, NavLink, Navbar as NavbarBs } from 'react-bootstrap';
+import { PageProps } from "@/types";
+import { useGlobalState } from '@/Layouts/elements/PopupContext';
 
 export function Navbar() {
     const logo = usePage<PageProps>().props.app.logo;
     const user = usePage<PageProps>().props.user;
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [show, setShow] = useState(false);
+
+    const showDropdown = () => {
+        setShow(!show);
+    }
+    const hideDropdown = () => {
+        setShow(false);
+    }
 
     const handleToggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
@@ -34,7 +42,7 @@ export function Navbar() {
         };
     }, []);
 
-    const {showModal, setShowModal} = useGlobalState();
+    const { showModal, setShowModal } = useGlobalState();
 
     const toggleModal = () => {
         setShowModal(true);
@@ -46,7 +54,7 @@ export function Navbar() {
 
     useEffect(() => {
         // Check if the page URL is '/swift-contract-generation-system' and isLoggedIn is false
-        if (pageUrl === '/swift-contract-generation-system' && !isLoggedIn) {
+        if (pageUrl === route('contract', [], false) && !isLoggedIn) {
             toggleModal();
         }
     }, [pageUrl, isLoggedIn]);
@@ -70,14 +78,14 @@ export function Navbar() {
         <>
             <NavbarBs
                 sticky="top"
-                className={`block ${isSticky ? 'sticky' : ''}`}
+                className={`block ${!isSticky ? 'sticky' : ''}`}
                 expand="lg"
-                style={{backgroundColor: "white"}}
+                style={{ backgroundColor: "white" }}
             >
                 <Container className="flex d-flex gap-4 py-16">
                     <div className="col-2 nav-logo">
                         <Link href="/">
-                            <Image src={logo} width="166px"/>
+                            <Image src={logo} width="166px" />
                         </Link>
                     </div>
                     <NavbarBs.Toggle
@@ -86,13 +94,42 @@ export function Navbar() {
                         className={expanded ? 'collapsed' : ''}
                     />
                     <Nav className="me-auto navbar navbar-expand-lg gap-5 d-none d-lg-flex">
-                        <Link
-                            className="navs fromLeft"
-                            href="/"
+
+                        <NavDropdown
+                            title="Open the Box"
+                            id=""
+                            className="border-0 navs fromLeft bg-white dropdown-bs"
                             onClick={() => setExpanded(false)}
+                            show={show}
+                            onMouseEnter={showDropdown}
+                            onMouseLeave={hideDropdown}
                         >
-                            Open-the-box
-                        </Link>
+                            <NavDropdown.Item
+                                className=""
+                                href="/open-the-box"
+                                as={NavLink}
+                                onClick={() => setExpanded(false)}
+                            >
+                                Open the Box
+                            </NavDropdown.Item>
+                            <NavDropdown.Item
+                                className=""
+                                href="/open-the-box/electricity"
+                                as={NavLink}
+                                onClick={() => setExpanded(false)}
+                            >
+                                Electricity
+                            </NavDropdown.Item>
+                            <NavDropdown.Item
+                                className=""
+                                href="/open-the-box/gas"
+                                as={NavLink}
+                                onClick={() => setExpanded(false)}
+                            >
+                                Gas
+                            </NavDropdown.Item>
+                        </NavDropdown>
+
                         <Link
                             className="navs fromLeft"
                             href="/contact"
@@ -125,7 +162,7 @@ export function Navbar() {
                     ) : (
                         <div className="dropdown avatar-button" onClick={handleToggleDropdown} ref={dropdownRef}>
                             <div className="d-flex align-items-center">
-                                <img src={user?.avatar_url ? user.avatar_url : "/images/shimer-avatar.png"} alt="Avatar" className="avatar-image"/>
+                                <img src={user?.avatar_url ? user.avatar_url : "/images/shimer-avatar.png"} alt="Avatar" className="avatar-image" />
                                 <div>{user?.name ? user?.name : ''} </div>
                             </div>
                             {isDropdownOpen && (

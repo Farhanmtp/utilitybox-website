@@ -5,8 +5,10 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
 
 class EmailVerificationNotification extends Notification
@@ -16,19 +18,13 @@ class EmailVerificationNotification extends Notification
     /**
      * @var
      */
-    public $email;
-    /**
-     * @var
-     */
     public $deal;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($email, $deal)
+    public function __construct($deal = null)
     {
-        $this->email = $email;
-
         $this->deal = $deal;
     }
 
@@ -51,9 +47,9 @@ class EmailVerificationNotification extends Notification
      */
     public function toMail($notifiable): MailMessage
     {
-        $url = $this->verificationUrl();
+        $url = $this->verificationUrl($notifiable);
 
-        $name = $this->deal->customer_name ?? $this->deal->contact['firstName'] ?? 'Concern';
+        $name = $notifiable->name ?? 'Concern';
 
         $app_name = settings('app.name', config('app.name'));
         return (new MailMessage)
@@ -61,7 +57,7 @@ class EmailVerificationNotification extends Notification
             ->greeting('Dear ' . $name)
             ->line("Thank you for signing up with $app_name! To complete your registration, please verify your email address by clicking the link below:")
             ->action('Verify Email', $url)
-            ->line('If you are unable to click the link, please copy and paste it into your web browser.')
+            //->line('If you are unable to click the link, please copy and paste it into your web browser.')
             ->line('This step is crucial to ensure the security of your account and to keep you informed about important updates.')
             ->line("If you did not sign up for $app_name, please disregard this email.")
             ->salutation(new HtmlString('Regards,<br>' . $app_name));
@@ -73,11 +69,22 @@ class EmailVerificationNotification extends Notification
      * @param mixed $notifiable
      * @return string
      */
-    protected function verificationUrl(): string
+    protected function verificationUrl($notifiable)
     {
-        $token = Crypt::encryptString($this->deal->id . ',' . $this->email);
+        $params = [
+            'id' => $notifiable->getKey(),
+            'hash' => sha1($notifiable->getEmailForVerification()),
+        ];
 
-        return url(route('compare', $token, false));
+        if ($this->deal) {
+            $params['deal'] = $this->deal->id;
+        }
+
+        return URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            $params
+        );
     }
 
     /**

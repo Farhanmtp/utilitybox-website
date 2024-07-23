@@ -22,9 +22,8 @@ Deal API Payload
 </pre>
 </code>
 </div>
-
 <h4 data-toggle="collapse" data-target="#collapseLoaApi" aria-expanded="false" aria-controls="collapsePayment">
-    LOA <small>Request Json/API Payload</small> <span class="btn-default loa">Copy</span>
+    LOA <small>Request Json/API Payload</small>
 </h4>
 <div id="collapseLoaApi" class="collapse" aria-labelledby="headingLoaApi">
     <?php

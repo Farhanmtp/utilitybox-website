@@ -47,14 +47,14 @@ const Dropdown: React.FC<DropdownProps> = ({buttonText, options, setValue}) => {
 
     return (
         <div
-            className={`relative inline-block text-center ${isOpen ? 'active' : ''}`}
+            className={`relative d-flex inline-block text-center ${isOpen ? 'active' : ''}`}
             ref={dropdownRef}
         >
             <button className="dropdown font-bold py-2 px-5 rounded" onClick={toggleDropdown}>
                 {buttonText}
             </button>
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-auto bg-white text-left border border-gray-300 rounded-lg shadow-lg">
+                <div className="absolute right-0 top-100 mt-1 w-auto bg-white text-left border border-gray-300 rounded-lg shadow-lg">
                     {Array.isArray(options) ? (
                         options.map((option, index) => (
                             <span

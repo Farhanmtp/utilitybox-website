@@ -3,12 +3,13 @@ import Slider from 'react-slick';
 import {useEffect, useRef, useState} from 'react';
 import {Col, Image} from 'react-bootstrap';
 import {BlogCard} from '@/Components/elements/BlogCard';
-import ReactHtmlParser from 'react-html-parser';
 // import { FacebookShareButton, TwitterShareButton, LinkedinShareButton } from 'react-share';
 import {FaLink} from 'react-icons/fa';
 import {PageProps} from "@/types";
 import {Head} from "@inertiajs/react";
 import Layout from "@/Layouts/Layout";
+import ReactHtmlParser from 'react-html-parser';
+import BookingForm from "@/Components/Blog/BookingForm";
 
 
 export default function BlogDetails({blog, relativePosts}: PageProps<{ blog: any, relativePosts: [] }>) {
@@ -126,9 +127,14 @@ export default function BlogDetails({blog, relativePosts}: PageProps<{ blog: any
                 {ReactHtmlParser(blogItem?.content ?? '')}
             </div>
 
-            <div className="container pt-5 pb-5 text-center w-fit">
-                <h1 className="border-bottom-blue1 mb-4"><b>Related</b> Articles</h1>
-            </div>
+            {/* Booking Form */}
+                <BookingForm />
+
+                <div className="container text-center w-full">
+                    <div className="pt-5 pb-5 text-center w-fit mx-auto">
+                        <h1 className="border-bottom-blue1 mb-4"><b>Related</b> Articles</h1>
+                    </div>
+                </div>
 
             <div className="blog-slider">
                 <Slider {...settings} ref={sliderRef} className="slide-container mb-5">

@@ -3,37 +3,37 @@ import React from 'react';
 interface Props {
     dealData?: any,
     setData: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void,
-    addressPreference: string
     preferenceClickHandler: (value: string) => void
 }
 
-export default function BillingDetails({setData, dealData, addressPreference, preferenceClickHandler}: Props) {
+export default function BillingDetails({setData, dealData, preferenceClickHandler}: Props) {
 
     return (
         <div className="grid grid-cols-2 gap-4">
             <div className={'col-span-2'}>
                 <div className={'w-full col-span-2 lg:col-span-1 mb-1'}>
-                    <label className={`btn-radio ${addressPreference == 'company' ? 'active' : ''}`}>
+                    <label className={`btn-radio ${dealData.billingAddress.preferredAddress == 'company' ? 'active' : ''}`}>
                         <input
                             className='ml-0' type="radio" name="billingAddressPreference"
                             value="company"
-                            checked={addressPreference === 'company'}
+                            checked={dealData.billingAddress.preferredAddress === 'company'}
                             onChange={(e) => preferenceClickHandler(e.target.value)}
                         /> Registered Business Address </label>
 
-                    <label className={`btn-radio ${addressPreference == 'site' ? 'active' : ''}`}>
+                    <label className={`btn-radio ${dealData.billingAddress.preferredAddress == 'site' ? 'active' : ''}`}>
                         <input
                             className='ml-0' type="radio" name="billingAddressPreference"
                             value="site"
-                            checked={addressPreference === 'site'}
+                            checked={dealData.billingAddress.preferredAddress === 'site'}
                             onChange={(e) => preferenceClickHandler(e.target.value)}
                         /> Site Address </label>
 
-                    <label className={`btn-radio ${addressPreference == '' ? 'active' : ''}`}>
+                    <label className={`btn-radio ${!dealData.billingAddress.preferredAddress ? 'active' : ''}`}>
                         <input
                             className='ml-0' type="radio" name="billingAddressPreference"
                             value=""
-                            checked={addressPreference === ''} onChange={(e) => preferenceClickHandler(e.target.value)}
+                            checked={!dealData.billingAddress.preferredAddress}
+                            onChange={(e) => preferenceClickHandler(e.target.value)}
                         /> Other Address Preferences </label>
                 </div>
             </div>

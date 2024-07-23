@@ -8,20 +8,9 @@ import PaymentStep from './steps/PaymentStep';
 import GlobalLoaderProps from "@/Components/elements/GlobalLoaderProps";
 import {usePage} from "@inertiajs/react";
 import {PageProps} from "@/types";
-import {getLocalStorage, isInt, setLocalStorage, updateState} from "@/utils/helper";
+import {getLocalStorage, setLocalStorage, updateState} from "@/utils/helper";
 
-interface Supplier {
-    name: string;
-    powwr_id: string;
-    logo?: string;
-    logo_url?: string;
-}
-
-interface Props {
-    suppliers: Supplier[];
-}
-
-export default function Scgs({suppliers}: Props) {
+export default function Scgs() {
     const deal = usePage<PageProps>().props.deal;
     const user = usePage<PageProps>().props.user;
     const pricechange = usePage<PageProps>().props.pricechange;
@@ -32,19 +21,19 @@ export default function Scgs({suppliers}: Props) {
     const [apiSuccess, setApiSuccess] = useState<any>(null);
 
     const [offerData, setOfferData] = useState({
+        dealId: '',
         utilityType: 'electric',
         meterNumber: '',
         meterType: '',
         quoteReference: null,
-        currentSupplierName: '',
-        newSupplierName: '',
-        newSupplierId: '',
+        currentSupplier: '',
+        newSupplier: '',
         contractRenewalDate: '',
+        contractEnded: false,
         contractEndDate: '',
-        newContractEndDate: '',
-        curentSupplier: '',
         measurementClass: '',
         halfHourly: '',
+        prompts: '',
         consumption: {
             amount: '',
             day: '',
@@ -52,6 +41,12 @@ export default function Scgs({suppliers}: Props) {
             wend: '',
             kva: '',
             kvarh: '',
+        },
+        plans: {
+            uplift: '',
+            duration: '',
+            custom: '',
+            supplier: ''
         },
         postCode: '',
         renewal: null,
@@ -63,16 +58,14 @@ export default function Scgs({suppliers}: Props) {
         paymentMethod: 'Monthly Direct Debit',
         sortByCommission: null,
         businessType: '',
-        MPANTop: '',
+        mpanTop: '',
     });
 
     const [dealData, setDealData] = useState<any>({
         id: '',
-        user_id: user?.id ?? '',
         dealId: '',
         envelopeId: '',
         utilityType: 'electric',
-        supplierId: '',
         step: '',
         tab: '',
         customer: {
@@ -85,7 +78,6 @@ export default function Scgs({suppliers}: Props) {
             mobile: user?.phone ?? '',
             landline: '',
             buildingName: '',
-            subBuildingName: '',
             buildingNumber: '',
             thoroughfareName: '',
             county: '',
@@ -94,15 +86,22 @@ export default function Scgs({suppliers}: Props) {
             poBox: '',
             dateOfBirth: '',
             moveInDate: '',
-            previousAddress: '',
-            contactPreference: ''
+            contactPreference: '',
+            previousAddress: {
+                buildingName: '',
+                buildingNumber: '',
+                thoroughfareName: '',
+                county: '',
+                postTown: '',
+                postcode: '',
+                poBox: '',
+            }
         },
         company: {
             name: '',
             type: '',
             number: '',
             buildingName: '',
-            subBuildingName: '',
             buildingNumber: '',
             thoroughfareName: '',
             county: '',
@@ -117,7 +116,6 @@ export default function Scgs({suppliers}: Props) {
                 lastName: '',
                 dob: '',
                 buildingName: '',
-                subBuildingName: '',
                 buildingNumber: '',
                 thoroughfareName: '',
                 county: '',
@@ -130,7 +128,6 @@ export default function Scgs({suppliers}: Props) {
                 lastName: '',
                 dob: '',
                 buildingName: '',
-                subBuildingName: '',
                 buildingNumber: '',
                 thoroughfareName: '',
                 county: '',
@@ -143,7 +140,6 @@ export default function Scgs({suppliers}: Props) {
             name: '',
             address: '',
             buildingName: '',
-            subBuildingName: '',
             buildingNumber: '',
             thoroughfareName: '',
             dependentThoroughfareName: '',
@@ -162,10 +158,9 @@ export default function Scgs({suppliers}: Props) {
         },
         contract: {
             currentSupplier: '',
-            currentSupplierName: '',
             newSupplier: '',
-            newSupplierName: '',
             currentEndDate: '',
+            ended: '',
             startDate: '',
             endDate: '',
             isNewConnection: true,
@@ -173,8 +168,8 @@ export default function Scgs({suppliers}: Props) {
             pricebook: '',
         },
         billingAddress: {
+            preferredAddress: '',
             buildingName: '',
-            subBuildingName: '',
             buildingNumber: '',
             thoroughfareName: '',
             county: '',
@@ -189,6 +184,7 @@ export default function Scgs({suppliers}: Props) {
             directDebitDayOfMonth: '',
             fixedDirectDebitPaymentAmount: '',
             useExistingBankDetails: '',
+            usePreviousDirectDebitDetails: 0,
         },
         bankDetails: {
             name: '',
@@ -201,7 +197,6 @@ export default function Scgs({suppliers}: Props) {
         bankAddress: {
             organisationName: '',
             departmentName: '',
-            subBuildingName: '',
             buildingName: '',
             buildingNumber: '',
             dependentThoroughfareName: '',
@@ -268,7 +263,6 @@ export default function Scgs({suppliers}: Props) {
         } else {
             if (name.indexOf('.') > 0) {
                 let parts = name.split('.');
-                console.log(parts.length)
                 var [p1, p2, p3] = parts;
                 if (parts.length == 3) {
                     setDealData((prevData: any) => ({
@@ -290,40 +284,14 @@ export default function Scgs({suppliers}: Props) {
             company = {title: company};
         }
         let premises = company?.address?.premises ?? '';
-        let address_line_1 = company?.address?.address_line_1 ?? '';
+        let address_line_1 = (premises ? premises + ', ' : '') + company?.address?.address_line_1 ?? '';
         let address_line_2 = company?.address?.address_line_2 ?? '';
-        if (!premises) {
-            if (address_line_1) {
-                if (address_line_2) {
-                    premises = address_line_1;
-                    address_line_1 = address_line_2;
-                    address_line_2 = '';
-                }else{
-                    if (address_line_1.match(/^\d/)) {
-                        let num = address_line_1.substring(0, address_line_1.indexOf(' '));
-                        if (isInt(num)) {
-                            premises = num;
-                        }
-                        if (num.endsWith('st') || num.endsWith('nd') || num.endsWith('rd') || num.endsWith('th')) {
-                            premises = address_line_1.split(' ').splice(0, 2).join(' ');
-
-                        }
-                        if (premises.length) {
-                            address_line_1 = address_line_1.slice(premises.length + 1);
-                        }
-                    }
-                }
-            }
-
-            console.log(premises,address_line_1,address_line_2);
-        }
 
         setDealValue('company', {
             name: company.title,
             number: company?.number ?? '',
-            buildingNumber: premises,
-            buildingName: address_line_1,
-            subBuildingName: address_line_2,
+            buildingNumber: address_line_1,
+            buildingName: address_line_2,
             postTown: company?.address?.locality ?? company?.address?.address_line_2 ?? '',
             county: company?.address?.region ?? company?.address?.locality ?? '',
             postcode: company?.address?.postal_code ?? '',
@@ -365,6 +333,7 @@ export default function Scgs({suppliers}: Props) {
             .then(resp => {
                 if (resp.data.id && dealData.id != resp.data.id) {
                     setDealValue('id', resp.data.id);
+                    setOfferValue('dealId', resp.data.id);
                 }
                 if (resp.data.dealId && dealData.dealId != resp.data.dealId) {
                     setDealValue('dealId', resp.data.dealId);
@@ -405,20 +374,6 @@ export default function Scgs({suppliers}: Props) {
         }
     }
 
-    function getSupplierByName(name: string) {
-        let supplier = suppliers.filter(
-            (item) => item.name === name
-        )
-        return supplier[0]?.powwr_id ?? '';
-    }
-
-    function getSupplierNameById(id: string) {
-        let supplier = suppliers.filter(
-            (item) => item.powwr_id === id
-        )
-        return supplier[0]?.name ?? '';
-    }
-
     useEffect(() => {
         let ignore = false;
         if (!ignore) {
@@ -432,16 +387,30 @@ export default function Scgs({suppliers}: Props) {
                 }
                 setDealData((p: any) => (updateState(p, _deal)));
                 setOfferData((p: any) => (updateState(p, {
+                    dealId: _deal.id,
                     utilityType: _deal.utilityType,
                     meterNumber: _deal.smeDetails.meterNumber,
-                    MPANTop: _deal.smeDetails.mpanTop ?? '',
+                    mpanTop: _deal.smeDetails.mpanTop ?? '',
+                    measurementClass: _deal.smeDetails?.measurementClass ?? '',
                     postCode: _deal.site.postcode,
                     businessType: _deal.company.type,
+                    contractRenewalDate: _deal.contract.startDate,
                     contractEndDate: _deal.contract.currentEndDate,
-                    currentSupplierName: getSupplierNameById(_deal.supplierId),
+                    currentSupplier: _deal.contract.currentSupplier,
+                    newSupplier: _deal.contract.newSupplier,
+                    contractEnded: _deal.contract.ended,
                     consumption: {
-                        amount: _deal?.usage?.unit,
-                        day: _deal?.usage?.day,
+                        amount: _deal?.usage?.unit ?? '',
+                        day: _deal?.usage?.day ?? '',
+                        night: _deal?.usage?.night ?? '',
+                        wend: _deal?.usage?.wend ?? '',
+                        kva: _deal?.usage?.kva ?? '',
+                        kvarh: _deal?.usage?.kvarh ?? '',
+                    },
+                    plans: {
+                        duration: _deal?.quoteDetails?.Term ?? '',
+                        uplift: _deal?.customUplift ?? '',
+                        supplier: _deal?.upliftSupplier ?? ''
                     }
                 })));
             }
@@ -452,7 +421,18 @@ export default function Scgs({suppliers}: Props) {
     }, []);
 
     useEffect(() => {
-        console.log(dealData);
+        let ignore = false;
+        if (!ignore) {
+            if (Object.keys(dealData.quoteDetails).length) {
+                saveDeal();
+            }
+        }
+        return () => {
+            ignore = true;
+        }
+    }, [dealData.quoteDetails]);
+
+    useEffect(() => {
         if (dealData.site.postcode) {
             setLocalStorage('deal', dealData, (60 * 15));
         }
@@ -469,18 +449,6 @@ export default function Scgs({suppliers}: Props) {
                         dealData={dealData}
                         setDealData={setDealValue}
                     />)}
-                {activeStep === 3 && (
-                    <ConsumptionDetailStep
-                        suppliers={suppliers}
-                        pricechange={pricechange}
-                        onNext={handleNextClick}
-                        offerData={offerData}
-                        setOfferData={setOfferValue}
-                        dealData={dealData}
-                        setDealData={setDealValue}
-                        saveDeal={saveDeal}
-                    />
-                )}
                 {activeStep === 2 && (
                     <GeneralInfoStep
                         onNext={handleNextClick}
@@ -492,13 +460,23 @@ export default function Scgs({suppliers}: Props) {
                         setCompanyAddress={setCompanyAddress}
                     />
                 )}
+                {activeStep === 3 && (
+                    <ConsumptionDetailStep
+                        pricechange={pricechange}
+                        onNext={handleNextClick}
+                        offerData={offerData}
+                        setOfferData={setOfferValue}
+                        dealData={dealData}
+                        setDealData={setDealValue}
+                        saveDeal={saveDeal}
+                    />
+                )}
                 {activeStep === 4 && <SubscriptionStep
                     onNext={handleNextClick}
                     offerData={offerData}
                     setOfferData={setOfferValue}
                     dealData={dealData}
                     setDealData={setDealValue}
-                    suppliers={suppliers}
                     pricechange={pricechange}
                     saveDeal={saveDeal}
                     isLoading={isItLoading}

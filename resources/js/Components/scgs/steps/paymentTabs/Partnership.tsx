@@ -91,7 +91,7 @@ export default function Partnership({setData, dealData, setDealData}: Props) {
                             className="input-field-payment"
                             type="text"
                             name="company.partner1.buildingName"
-                            required={true}
+                            //required={true}
                             placeholder="Enter Address Line 2"
                             value={dealData.company?.partner1?.buildingName}
                             onChange={setData}
@@ -211,7 +211,7 @@ export default function Partnership({setData, dealData, setDealData}: Props) {
                             className="input-field-payment"
                             type="text"
                             name="company.partner2.buildingName"
-                            required={true}
+                            //required={true}
                             placeholder="Enter Address Line 2"
                             value={dealData.company?.partner2?.buildingName}
                             onChange={setData}

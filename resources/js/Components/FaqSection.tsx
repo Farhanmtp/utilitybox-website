@@ -1,6 +1,8 @@
 import Accordion from 'react-bootstrap/Accordion';
-import faq from "../data/faq.json";
+//import HTMLReactParser from 'html-react-parser';
 import ReactHtmlParser from 'react-html-parser';
+//@ts-ignore
+import faq from "../Data/faq.json";
 
 export function FaqSection() {
     return (

@@ -4,15 +4,22 @@ namespace App\Http\Controllers\Api\Powwr;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Resources\DealResource;
-use App\Jobs\SendDocuSign;
-use App\Models\PowwrDeals;
+use App\Models\Deals;
 use Illuminate\Http\Request;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class DealsController extends ApiController
 {
 
     use BaseTrait;
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function saveData(Request $request)
     {
 
@@ -22,14 +29,14 @@ class DealsController extends ApiController
         $step = $request->get('step');
 
         if ($id) {
-            $deal = PowwrDeals::firstOrNew(['id' => $id]);
+            $deal = Deals::firstOrNew(['id' => $id]);
         } else {
-            $deal = new PowwrDeals();
+            $deal = new Deals();
         }
 
         $deal->supplierId = $request->supplierId;
 
-        if ($userId = $request->input('user_id')) {
+        if (!$deal->user_id && $userId = $request->input('user_id', auth()->id())) {
             $deal->user_id = $userId;
         }
 
@@ -38,10 +45,6 @@ class DealsController extends ApiController
         }
         if ($request->exists('tab')) {
             $deal->tab = $request->tab;
-        }
-
-        if ($request->exists('userId')) {
-            $deal->user_id = $request->userId;
         }
 
         if ($request->exists('dealId')) {
@@ -57,7 +60,7 @@ class DealsController extends ApiController
         }
 
         if ($request->exists('customer')) {
-            $deal->customer = array_filter($request->customer);
+            $deal->customer = $request->customer;
         }
 
         if ($request->exists('company')) {
@@ -69,33 +72,33 @@ class DealsController extends ApiController
             if ($type == 'plc') {
                 data_set($company, 'type', 'PLC');
             }
-            $deal->company = array_filter($request->company);
+            $deal->company = $request->company;
         }
 
         if ($request->exists('site')) {
-            $deal->site = array_filter($request->input('site'));
+            $deal->site = $request->input('site');
         }
         if ($request->exists('smeDetails')) {
-            $deal->smeDetails = array_filter($request->input('smeDetails'));
+            $deal->smeDetails = $request->input('smeDetails');
         }
 
         if ($request->exists('contract')) {
-            $deal->contract = array_filter($request->input('contract'));
+            $deal->contract = $request->input('contract');
         }
         if ($request->exists('billingAddress')) {
-            $deal->billingAddress = array_filter($request->input('billingAddress'));
+            $deal->billingAddress = $request->input('billingAddress');
         }
 
         if ($request->exists('paymentDetail')) {
-            $deal->paymentDetail = array_filter($request->input('paymentDetail'));
+            $deal->paymentDetail = $request->input('paymentDetail');
         }
 
         if ($request->exists('bankDetails')) {
-            $deal->bankDetails = array_filter($request->input('bankDetails'));
+            $deal->bankDetails = $request->input('bankDetails');
         }
 
         if ($request->exists('bankAddress')) {
-            $deal->bankAddress = array_filter($request->input('bankAddress'));
+            $deal->bankAddress = $request->input('bankAddress');
         }
 
         if ($request->exists('quoteDetails')) {
@@ -106,11 +109,11 @@ class DealsController extends ApiController
         }
 
         if ($request->exists('rates')) {
-            $deal->rates = array_filter($request->input('rates'));
+            $deal->rates = $request->input('rates');
         }
 
         if ($request->exists('usage')) {
-            $deal->usage = array_filter($request->input('usage'));
+            $deal->usage = $request->input('usage');
         }
 
         $deal->save();
@@ -131,13 +134,18 @@ class DealsController extends ApiController
             }*/
             if ($request->tab == 'finalize') {
                 //SendDocuSign::dispatch($deal);
+                $supplier = data_get($deal, 'contract.newSupplier');
+                $deal->status = 'finalized';
+                if (in_array(strtolower($supplier), ['e-on next'])) {
+                    $deal->status = 'action-required';
+                }
+
                 try {
                     $loaResponse = $deal->sendLoa($deal);
                     if ($loaResponse['success']) {
                         $loaEnvelopeId = $loaResponse['envelopeId'] ?? '';
                         if ($loaEnvelopeId) {
                             $deal->loaEnvelopeId = $loaEnvelopeId;
-                            $deal->save();
                         }
                     }
                 } catch (\Exception $e) {
@@ -148,13 +156,11 @@ class DealsController extends ApiController
                         $envelopeId = $response['envelopeId'] ?? '';
                         if ($envelopeId) {
                             $deal->envelopeId = $envelopeId;
-                            $deal->save();
                         }
                     }
                 } catch (\Exception $e) {
                 }
-
-
+                $deal->save();
             }
             return response()->json([
                 'success' => true,
@@ -173,7 +179,7 @@ class DealsController extends ApiController
             'id' => 'required',
         ]);
 
-        $deal = PowwrDeals::where('dealId', $request->id)->first();
+        $deal = Deals::where('dealId', $request->id)->first();
         if ($deal) {
             $response = $deal->saveDeal();
             return response()->json($response);
@@ -189,7 +195,7 @@ class DealsController extends ApiController
             'dealId' => 'required',
         ]);
 
-        $deal = PowwrDeals::where('dealId', $request->dealId)->first();
+        $deal = Deals::where('dealId', $request->dealId)->first();
         if (!$deal) {
             return response()->json(['success', false, 'error' => 'Deal not found.']);
         }

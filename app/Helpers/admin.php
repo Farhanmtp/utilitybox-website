@@ -69,7 +69,7 @@ if (!function_exists('hasPermission')) {
  * @param null $fieldValue
  * @return string
  */
-function ajaxCheckboxDisplay($id, $table, $field, $fieldValue = null, $label = '', $model = null, $disabled = false)
+function ajaxCheckboxDisplay($id, $table, $field, $fieldValue = null, $label = 'Active', $model = null, $disabled = false)
 {
     $lineId = $field . $id;
     $lineId = str_replace('.', '', $lineId); // fix JS bug
@@ -96,7 +96,7 @@ function ajaxCheckboxDisplay($id, $table, $field, $fieldValue = null, $label = '
         if (Str::contains(strtolower($label), ['unpublish', 'un-publish', 'draft', 'disable', 'warning'])) {
             $type = 'warning';
         }
-        if (Str::contains(strtolower($label), ['disable', 'trash'])) {
+        if (Str::contains(strtolower($label), ['inactive', 'disable', 'trash'])) {
             $type = 'danger';
         }
         $label = '<span class="badge badge-' . $type . '">' . $label . '</span>';
@@ -106,10 +106,16 @@ function ajaxCheckboxDisplay($id, $table, $field, $fieldValue = null, $label = '
         }
     }
 
-    if ($disabled) {
+    /*if ($disabled) {
         $html = $html . ' ' . $label;
     } else {
         $html = '<a href="" id="' . $lineId . '" class="ajax-request" ' . $data . '>' . $html . ' ' . $label . '</a>';
+    }*/
+
+    if ($disabled) {
+        $html = $label ?: $html;
+    } else {
+        $html = '<a href="" id="' . $lineId . '" class="ajax-request" ' . $data . '>' . ($label ?: $html) . '</a>';
     }
 
     return $html;

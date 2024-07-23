@@ -1,26 +1,57 @@
 [
     {
-        "id" : 1,
-        "name" : "Andrew Maben",
-        "title" : "AC Maben Ltd.",
-        "content" : "... Utility Box offered a seamless service from initial contact to signing contracts with energy suppliers which massively reduced the hours of hassle. They helped us in achieving competitive rates for our company's gas and electricity."
+      "id": 1,
+      "name": "Andrew Maben",
+      "title": "AC Maben Ltd.",
+      "content": "Utility Box offered a seamless service from initial contact to signing contracts with energy suppliers which massively reduced the hours of hassle. They helped us in achieving competitive rates for our company's gas and electricity."
     },
     {
-        "id" : 2,
-        "name" : "Anjum Mahmood",
-        "title" : "Black Knight Ltd.",
-        "content" : "…. They are wow! The ease in which they handled our electricity renewal from start to end meant they took away all the fuss and faff. I have just subscribed to their Utility Management Services, as it seems like a no brainer. Who wouldn't want someone managing & auditing your Utilities in today's climate"
+      "id": 2,
+      "name": "Anjum Mahmood",
+      "title": "Black Knight Ltd.",
+      "content": "They are wow! The ease in which they handled our electricity renewal from start to end meant they took away all the fuss and faff. I have just subscribed to their Utility Management Services, as it seems like a no brainer. Who wouldn't want someone managing & auditing your Utilities in today's climate"
     },
     {
-        "id" : 3,
-        "name" : "John Doe",
-        "title" : "D&A Security Ltd.",
-        "content" : "It is a straightforward, professional & no pressure service."
+      "id": 3,
+      "name": "John Doe",
+      "title": "D&A Security Ltd.",
+      "content": "It is a straightforward, professional & no pressure service."
     },
     {
-        "id" : 4,
-        "name" : "Ira",
-        "title" : "UBI Lease Management Ltd.",
-        "content" : "…. One of the best decision's I have probably made this year. Utility Box have simplified our Portfolio management for Utilities and have demonstrated savings against quotations I have received directly from suppliers. They also manage our Change of Tenancies, which means they liaise with the supplier to inform them that a tenant has left, and a new tenant has come in."
+      "id": 4,
+      "name": "Ira",
+      "title": "UBI Lease Management Ltd.",
+      "content": "One of the best decision's I have probably made this year. Utility Box have simplified our Portfolio management for Utilities and have demonstrated savings against quotations I have received directly from suppliers. They also manage our Change of Tenancies, which means they liaise with the supplier to inform them that a tenant has left, and a new tenant has come in."
+    },
+    {
+      "id": 5,
+      "name": "Amjad Ali Khan",
+      "title": "MD General Catering Ltd.",
+      "content": "Having a utility manager could bring a much needed stability and foresight to energy management. As a business we have benefited from working with Utility Box and have benefited greatly.The service provided is informative, efficient with a clear explanation of our options and always with a saving."
+    },
+    {
+      "id": 6,
+      "name": "Gerogie Randon",
+      "title": "Regional Operations Director, HomeWork Workspace",
+      "content": "Fantastic company and even better people! Utility Box have been a huge help for us at HomeWork Workspace! Total experts, I couldn’t recommend working with them enough"
+    },
+    {
+      "id": 7,
+      "name": "Steve Shabo",
+      "title": "",
+      "content": "Last year I engaged Pramod from Utility Box, to obtain better renewal rates for my business. Utility Box were able to save me £1,195.97 on my electricity and £1,657.99 on my gas. Which was great!! However, this is where a broker’s work ends. But Utility Box not only saves you money on your renewals, but they also manage your energy accounts to ensure that you are being billed correctly. They will review your invoices to check that you are paying the correct agreed contract rates and ensure that the usage and reads are correct. Why use a Broker for contract renewals when you can have a dedicated Utility Manager, who manages your energy accounts and renewals. Would highly recommend."
+    },
+    {
+      "id": 8,
+      "name": "Oliver Sanker",
+      "title": "",
+      "content": "Pramod and the Utility Box team have eased the burden of dealing with bureaucratic utilities companies immeasurably and helped  several businesses of mine achieve real cost savings in the process. In addition to that the team are very diligent, responsive and clear in their communications which is all you can ask for."
+    },
+    {
+      "id": 9,
+      "name": "AF Addlestone",
+      "title": "",
+      "content": "They've taken the hassle out of utility management and saved us both time and money. Their tailored solutions have significantly taken off the utility management burden off our shoulders, and their team is always available to address any concerns."
     }
-]
+  ]
+  

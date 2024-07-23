@@ -30,15 +30,12 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                                                              setDealData,
                                                              setCompanyAddress
                                                          }) => {
-    const [mobileError, setMobileError] = useState('');
-    const [phoneError, setPhoneError] = useState('');
-    const [emailError, setEmailError] = useState('');
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [companies, setCompanies] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [companyName, setCompanyName] = useState('');
 
-    const [isEmailValid, setIsEmailValid] = useState(false);
     const isLoggedIn = usePage<PageProps>().props.loggedin;
 
     const [isLoginValid, setIsLoginValid] = useState(true);
@@ -46,15 +43,16 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
     const {showModal, setShowModal} = useGlobalState();
 
     const handleCompanyTypeClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setErrors(p => ({...p, mobile: '', type: ''}))
         let value = event.target.value;
         setOfferData('businessType', value);
+        setDealData('customer.jobTitle', (value == 'SoleTrader' ? 'Proprietor / Owner' : 'Director'));
         setDealData('company', {
             name: '',
             number: '',
             type: value,
             buildingNumber: '',
             buildingName: '',
-            subBuildingName: '',
             thoroughfareName: '',
             postTown: '',
             county: '',
@@ -65,48 +63,41 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
     };
 
     const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setErrors(p => ({...p, mobile: '', phone: ''}))
         const mobile = e.target.value.replace(/[a-zA-Z]/g, '').slice(0, 11);
         setDealData('customer.mobile', mobile);
 
-        if (!validateMobile(mobile)) {
+        if (mobile && !validateMobile(mobile)) {
             const regExp = /^(07)\d*$/;
             if (!regExp.test(mobile)) {
-                setMobileError('Mobile number must start with 07');
+                setErrors(p => ({...p, mobile: 'Mobile number must start with 07'}))
             } else {
-                setMobileError('Please enter a valid phone number');
+                setErrors(p => ({...p, mobile: 'Please enter a valid phone number'}))
             }
-        } else {
-            setMobileError('');
         }
     };
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const phone1 = e.target.value.replace(/[a-zA-Z]/g, '').slice(0, 11);
-        setDealData('customer.landline', phone1);
-        if (phone1 && !validatePhone(phone1)) {
+        setErrors(p => ({...p, landline: '', phone: ''}))
+        const landline = e.target.value.replace(/[a-zA-Z]/g, '').slice(0, 11);
+        setDealData('customer.landline', landline);
+        if (landline && !validatePhone(landline)) {
             const regExp = /^(0)+(?!7).*$/;
-            if (!/^(0).*$/.test(phone1)) {
-                setPhoneError('Landline number must start with 0');
-            } else if (!regExp.test(phone1)) {
-                setPhoneError('Phone number should not start with ' + phone1.slice(0, 2));
-            } else {
-                setPhoneError('Please enter a valid Landline number');
+            if (!/^(0).*$/.test(landline)) {
+                setErrors(p => ({...p, landline: 'Landline number must start with 0'}))
+            } else if (!regExp.test(landline)) {
+                setErrors(p => ({...p, landline: 'Phone number should not start with ' + landline.slice(0, 2)}))
             }
-
-        } else {
-            setPhoneError('');
         }
     };
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newEmail = e.target.value;
-        if (!validateEmail(newEmail)) {
-            setEmailError('Please enter a valid email address');
-        } else {
-            setEmailError('');
+        setErrors(p => ({...p, email: ''}))
+        const email = e.target.value;
+        setDealData('customer.email', email);
+        if (!validateEmail(email)) {
+            setErrors(p => ({...p, email: 'Please enter a valid email address'}))
         }
-        validateEmail(newEmail);
-        setDealData('customer.email', newEmail);
     };
 
     const handleNextClick = () => {
@@ -124,11 +115,9 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                 }).then((response) => response.json()).then((data) => {
                     if (data.success && data.data.user !== null) {
                         // User is not null, proceed with onNext()
-                        setIsEmailValid(true);
                         setShowModal(true);
                         setIsLoginValid(false);
                     } else {
-                        setIsEmailValid(true);
                         onNext();
                     }
                 }).catch((error) => {
@@ -140,25 +129,67 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
         }
     };
 
-
     function validateStep() {
+        const newErrors: { [key: string]: string } = {};
+        let isValid = true;
 
-        if (!dealData.company.type || !dealData.customer.name || !dealData.customer.mobile || !dealData.customer.email) {
-            return false;
+        if (!dealData.company.type) {
+            newErrors.type = 'Please select company type';
+            isValid = false;
         }
+
         if (dealData.company.type != 'SoleTrader' && !dealData.company.name) {
-            return false;
+            newErrors.company = 'Please enter company name';
+            isValid = false;
         }
 
-        if ((dealData.company.name && dealData.company.name?.length < 3) || (dealData.customer.name && dealData.customer.name?.length < 3)) {
-            return false;
+        if (dealData.company.name && dealData.company.name?.length < 3) {
+            newErrors.company = 'Please enter valid company name';
+            isValid = false;
         }
 
-        if (!validateEmail(dealData.customer.email) || !validateMobile(dealData.customer.mobile) || (dealData.customer.landline && !validatePhone(dealData.customer.landline))) {
-            return false;
+        if (!dealData.customer.name) {
+            newErrors.name = 'Please enter your name';
+            isValid = false;
+        } else if (dealData.customer.name?.length < 3) {
+            newErrors.name = 'Please enter valid name';
+            isValid = false;
         }
 
-        return true;
+        if (!dealData.customer.email || !validateEmail(dealData.customer.email)) {
+            newErrors.email = 'Please enter a valid email address';
+            isValid = false;
+        }
+
+        if (!dealData.customer.mobile && !dealData.customer.landline) {
+            newErrors.phone = 'Please enter mobile or landline number';
+            isValid = false;
+        } else {
+            const landline = dealData.customer.landline;
+            const mobile = dealData.customer.mobile;
+            if (mobile && !validateMobile(mobile)) {
+                const regExp = /^(07)\d*$/;
+                if (!regExp.test(mobile)) {
+                    newErrors.mobile = 'Mobile number must start with 07';
+                } else {
+                    newErrors.mobile = 'Please enter a valid phone number';
+                }
+                isValid = false;
+            }
+            if (landline && !validatePhone(landline)) {
+                const regExp = /^(0)+(?!7).*$/;
+                if (!/^(0).*$/.test(landline)) {
+                    newErrors.landline = 'Landline number must start with 0';
+                } else if (!regExp.test(landline)) {
+                    newErrors.landline = 'Phone number should not start with ' + landline.slice(0, 2);
+                } else {
+                    newErrors.landline = 'Please enter a valid Landline number';
+                }
+                isValid = false;
+            }
+        }
+        setErrors(newErrors);
+        return isValid;
     }
 
     function companyClickHandler(company: any) {
@@ -212,45 +243,50 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                 <h3 className="mb-4">What is your <b className="text-semibold">company type?</b>
                     {/* <Tooltip>add content hare</Tooltip> */}
                 </h3>
-                <label className={`btn-radio ${dealData.company.type === 'Limited' ? 'active' : ''}`}
-                       htmlFor="privateLimited">
-                    <input
-                        id="privateLimited"
-                        type="radio"
-                        value="Limited"
-                        checked={dealData.company.type === 'Limited'}
-                        onChange={handleCompanyTypeClick}
-                        className="hidden"
-                    />
-                    Private Limited (LTD)
-                </label>
+                <div>
+                    <label className={`btn-radio ${dealData.company.type === 'Limited' ? 'active' : ''}`}
+                           htmlFor="privateLimited">
+                        <input
+                            id="privateLimited"
+                            type="radio"
+                            value="Limited"
+                            checked={dealData.company.type === 'Limited'}
+                            onChange={handleCompanyTypeClick}
+                            className="hidden"
+                        />
+                        Private Limited (LTD)
+                    </label>
 
-                <label
-                    className={`btn-radio ${dealData.company.type === 'LimitedLiabilityPartnership' ? 'active' : ''}`}
-                    htmlFor="llp">
-                    <input
-                        id="llp"
-                        type="radio"
-                        value="LimitedLiabilityPartnership"
-                        checked={dealData.company.type === 'LimitedLiabilityPartnership'}
-                        onChange={handleCompanyTypeClick}
-                        className="hidden"
-                    />
-                    LLP
-                </label>
+                    <label
+                        className={`btn-radio ${dealData.company.type === 'LimitedLiabilityPartnership' ? 'active' : ''}`}
+                        htmlFor="llp">
+                        <input
+                            id="llp"
+                            type="radio"
+                            value="LimitedLiabilityPartnership"
+                            checked={dealData.company.type === 'LimitedLiabilityPartnership'}
+                            onChange={handleCompanyTypeClick}
+                            className="hidden"
+                        />
+                        LLP
+                    </label>
 
-                <label className={`btn-radio ${dealData.company.type === 'SoleTrader' ? 'active' : ''}`}
-                       htmlFor="soleTrader">
-                    <input
-                        className="hidden"
-                        id="soleTrader"
-                        type="radio"
-                        value="SoleTrader"
-                        checked={dealData.company.type === 'SoleTrader'}
-                        onChange={handleCompanyTypeClick}
-                    />
-                    Sole Trader
-                </label>
+                    <label className={`btn-radio ${dealData.company.type === 'SoleTrader' ? 'active' : ''}`}
+                           htmlFor="soleTrader">
+                        <input
+                            className="hidden"
+                            id="soleTrader"
+                            type="radio"
+                            value="SoleTrader"
+                            checked={dealData.company.type === 'SoleTrader'}
+                            onChange={handleCompanyTypeClick}
+                        />
+                        Sole Trader
+                    </label>
+                </div>
+                {errors.type && (
+                    <div className="text-red-500">{errors.type}</div>
+                )}
             </div>
             {dealData.company.type && (
                 <div className='px-2 md:px-0'>
@@ -264,6 +300,7 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                                     placeholder="Enter your company name"
                                     value={dealData.company.name ?? ''}
                                     onChange={(e) => {
+                                        setErrors(p => ({...p, company: ''}))
                                         setDealData('company.name', e.target.value);
                                         setCompanyName(e.target.value);
                                     }}
@@ -292,8 +329,7 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                                                              maxWidth: "auto",
                                                              borderBottom: "1px solid gray",
                                                              backgroundColor: "white"
-                                                         }}
-                                                         placeholder={`Enter postcode.`}>
+                                                         }}>
                                                         {company?.title}
                                                     </div>
                                                 );
@@ -302,6 +338,9 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                                     </div>
                                 }
                             </div>
+                            {(!isLoading && errors.company) && (
+                                <div className="text-red-500">{errors.company}</div>
+                            )}
                         </div>
                     ) : null}
 
@@ -313,24 +352,34 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                             placeholder="Enter your name"
                             value={dealData.customer.name}
                             onChange={(e) => {
+                                setErrors(p => ({...p, name: ''}))
                                 setDealData('customer.name', e.target.value);
                                 let [f, m, l] = (e.target.value).split(' ');
                                 setDealData('customer.firstName', f + (l ? ' ' + m : ''));
                                 setDealData('customer.lastName', l ?? m);
                             }}
                         />
+                        {errors.name && (
+                            <div className="text-red-500">{errors.name}</div>
+                        )}
                     </div>
+
                     <div className="mb-4 md:mb-1">
                         <h3 className="mb-2">How can we <b>contact you?</b></h3>
+
+
                         <input
                             type="tel"
                             value={dealData.customer.mobile ?? ''}
                             onChange={handleMobileNumberChange}
                             className="input-field"
-                            placeholder="Enter Mobile Number*"
+                            placeholder="Enter Mobile Number"
                         />
-                        {mobileError && (
-                            <div className="text-red-500">{mobileError}</div>
+                        {errors.phone && (
+                            <div className="text-red-500">{errors.phone}</div>
+                        )}
+                        {errors.mobile && (
+                            <div className="text-red-500">{errors.mobile}</div>
                         )}
                     </div>
                     <div className="mb-2 md:mb-3">
@@ -339,10 +388,10 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                             value={dealData.customer.landline ?? ''}
                             onChange={handlePhoneNumberChange}
                             className="input-field"
-                            placeholder={`Enter Landline Number (Optional)`}
+                            placeholder={`Enter Landline Number`}
                         />
-                        {phoneError && (
-                            <div className="text-red-500">{phoneError}</div>
+                        {errors.landline && (
+                            <div className="text-red-500">{errors.landline}</div>
                         )}
                     </div>
                     <div className="mb-3 md:mb-5">
@@ -353,21 +402,19 @@ const GeneralInfoStep: React.FC<GeneralInfoStepProps> = ({
                             className="input-field mt-3"
                             placeholder="Enter Email"
                         />
-                        {emailError && (
-                            <div className="text-red-500">{emailError}</div>
+                        {errors.email && (
+                            <div className="text-red-500">{errors.email}</div>
                         )}
                         {isLoginValid === false && (
                             <div className="text-red-500">Email Already Registered Please <a
                                 className='text-bold cursor-pointer' onClick={() => setShowModal(true)}>Login</a></div>
                         )}
                     </div>
-
-                    {/*{validateStep() && (*/}
-                        <div onClick={handleNextClick}>
-                            <BlackButton title="Continue"/>
-                        </div>
-                    {/*)}*/}
-
+                    <div>
+                        <span onClick={handleNextClick}>
+                        <BlackButton title="Continue"/>
+                        </span>
+                    </div>
                 </div>
             )}
         </>

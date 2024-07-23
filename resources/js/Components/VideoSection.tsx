@@ -15,7 +15,7 @@ export function VideoSection() {
                 <div className="video-section">
                     <div className="pt-5 pb-5 text-white">
                         <div>
-                        <h2 className='text-3xl md:text-4xl'>Let <b>UmaaS</b> take charge<br /> of your <b>Energy Needs!</b></h2>
+                        <h2 className='text-3xl md:text-4xl'>Let <b>US</b> take charge<br /> of your <b>Energy Needs!</b></h2>
                         </div>
                     </div>
                 </div>

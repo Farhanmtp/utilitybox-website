@@ -44,7 +44,7 @@ class DealResource extends JsonResource
             'usage' => $this->usage,
             'status' => $this->status,
             'user' => UserResource::make($this->whenLoaded('user')),
-            'supplier' => PowwrSupplierResource::make($this->whenLoaded('supplier')),
+            'supplier' => SupplierResource::make($this->whenLoaded('supplier')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

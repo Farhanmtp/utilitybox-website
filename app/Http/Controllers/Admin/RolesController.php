@@ -16,7 +16,6 @@ class RolesController extends Controller
 
         $roles = Role::all();
 
-
         return view('admin.roles.index', compact('roles'));
     }
 
@@ -126,5 +125,15 @@ class RolesController extends Controller
         }
 
         return redirect()->route('admin.roles.index');
+    }
+
+    public function resetPermissions()
+    {
+
+        $result = Permission::resetDefault();
+
+        alert_message($result['message'], $result['status']);
+
+        return redirect()->back();
     }
 }

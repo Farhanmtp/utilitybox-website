@@ -8,6 +8,9 @@
                 </div>
                 <div class="col-6 text-right">
                     @if(hasPermission('suppliers.create'))
+
+                        <a class="btn btn-primary" href="{{ route('admin.suppliers.sync') }}"><i
+                                class="fa fa-sync"></i> Sync</a>
                         <a href="{{ route('admin.suppliers.create') }}" class="btn btn-primary"><i class="fa fa-plus"></i> Add Supplier</a>
                     @endif
                 </div>

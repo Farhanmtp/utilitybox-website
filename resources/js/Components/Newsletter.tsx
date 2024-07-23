@@ -6,7 +6,7 @@ export function Newsletter() {
         <div className="Newsletter bg-light-to-blue text-white py-5">
             <div className="container d-lg-flex">
                 <div className="col-lg-6 col-md-12 md:mb-auto mb-5">
-                    <h3>Have a Question?</h3>
+                    <h3 className="font-medium mb-2">Have a Question?</h3>
                     <p className="mb-4">Get your online quotation, sign up & subscribe- All at one place</p>
                     <WhiteBorderButton title="FAQ's" link="/contact#faqSection" icon="null" />
                 </div>

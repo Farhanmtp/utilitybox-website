@@ -93,7 +93,7 @@
     <div class="col-md-6">
         <div class="form-group">
             <label class="control-label">Mobile</label>
-            <input class="form-control" type="tel" required name="customer[mobile]" value="{{data_get($deal,'customer.mobile')?:data_get($deal,'customer.phone')}}">
+            <input class="form-control" type="tel" name="customer[mobile]" value="{{data_get($deal,'customer.mobile')?:data_get($deal,'customer.phone')}}">
         </div>
     </div>
     <div class="col-md-6">
@@ -105,56 +105,50 @@
 </div>
 <hr>
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-12">
+        <h4>Home Address</h4>
+    </div>
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Number</label>
+            <label class="control-label">Address Line 1</label>
             <input class="form-control" type="text" name="customer[buildingNumber]" value="{{data_get($deal,'customer.buildingNumber')}}">
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Name</label>
+            <label class="control-label">Address Line 2</label>
             <input class="form-control" type="text" name="customer[buildingName]" value="{{data_get($deal,'customer.buildingName')}}">
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label">Sub-Building Name</label>
-            <input class="form-control" type="text" name="customer[subBuildingName]" value="{{data_get($deal,'customer.subBuildingName')}}">
-        </div>
-    </div>
-    <div class="col-md-6">
+    <div class="col-md-2">
         <div class="form-group">
             <label class="control-label">Thoroughfare Name</label>
             <input class="form-control" type="text" name="customer[thoroughfareName]" value="{{data_get($deal,'customer.thoroughfareName')}}">
         </div>
     </div>
-    <div class="col-md-5">
+    <div class="col-md-3">
         <div class="form-group">
             <label class="control-label">County</label>
             <input class="form-control" type="text" name="customer[county]" value="{{data_get($deal,'customer.county')}}">
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="form-group">
             <label class="control-label">Post Town</label>
             <input class="form-control" type="text" name="customer[postTown]" value="{{data_get($deal,'customer.postTown')}}">
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">PostCode</label>
-                    <input class="form-control" type="text" name="customer[postcode]" value="{{data_get($deal,'customer.postcode')}}">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">PO Box</label>
-                    <input class="form-control" type="text" name="customer[poBox]" value="{{data_get($deal,'customer.poBox')}}">
-                </div>
-            </div>
+
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PostCode</label>
+            <input class="form-control" type="text" name="customer[postcode]" value="{{data_get($deal,'customer.postcode')}}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PO Box</label>
+            <input class="form-control" type="text" name="customer[poBox]" value="{{data_get($deal,'customer.poBox')}}">
         </div>
     </div>
     <div class="col-md-12">
@@ -162,15 +156,58 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="control-label">Move In Date</label>
-                    <input class="form-control" type="date" name="customer[moveInDate]" value="{{formatDate(data_get($deal,'customer.moveInDate'))}}">
+                    <input class="form-control" type="date" name="customer[moveInDate]" id="customerMoveInDate" value="{{formatDate(data_get($deal,'customer.moveInDate'))}}">
                 </div>
             </div>
-            {{--<div class="col-md-8">
-                <div class="form-group">
-                    <label class="control-label">Previous Address</label>
-                    <input class="form-control" type="text" name="customer[previousAddress]" value="{{data_get($deal,'customer.previousAddress')}}">
-                </div>
-            </div>--}}
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row" id="PreviousAddress" style="display: none">
+    <div class="col-md-12">
+        <h4>Previous Address</h4>
+    </div>
+    <div class="col-md-5">
+        <div class="form-group">
+            <label class="control-label">Address Line 1</label>
+            <input class="form-control" type="text" name="customer[previousAddress][buildingNumber]" value="{{data_get($deal,'customer.previousAddress.buildingNumber')}}">
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="form-group">
+            <label class="control-label">Address Line 2</label>
+            <input class="form-control" type="text" name="customer[previousAddress][buildingName]" value="{{data_get($deal,'customer.previousAddress.buildingName')}}">
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <label class="control-label">Thoroughfare Name</label>
+            <input class="form-control" type="text" name="customer[previousAddress][thoroughfareName]" value="{{data_get($deal,'customer.previousAddress.thoroughfareName')}}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">County</label>
+            <input class="form-control" type="text" name="customer[previousAddress][county]" value="{{data_get($deal,'customer.previousAddress.county')}}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">Post Town</label>
+            <input class="form-control" type="text" name="customer[previousAddress][postTown]" value="{{data_get($deal,'customer.previousAddress.postTown')}}">
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PostCode</label>
+            <input class="form-control" type="text" name="customer[previousAddress][postcode]" value="{{data_get($deal,'customer.previousAddress.postcode')}}">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label class="control-label">PO Box</label>
+            <input class="form-control" type="text" name="customer[previousAddress][poBox]" value="{{data_get($deal,'customer.poBox')}}">
         </div>
     </div>
 </div>

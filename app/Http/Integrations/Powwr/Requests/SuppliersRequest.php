@@ -27,7 +27,7 @@ class SuppliersRequest extends Request implements HasBody
     /**
      * @param string $input post code or meter number
      */
-    public function __construct(array $data)
+    public function __construct(array $data = [])
     {
         $this->data = $data;
 
@@ -80,6 +80,6 @@ class SuppliersRequest extends Request implements HasBody
      */
     protected function defaultConfig(): array
     {
-        return ['verify' => false];
+        return ['verify' => false,'timeout' => 1000];
     }
 }

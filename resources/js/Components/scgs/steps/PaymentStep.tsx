@@ -26,17 +26,17 @@ const steps: Step[] = [
     {
         name: 'business_details',
         title: 'Your Business Details',
-        required_fields: ['company.name', 'company.buildingNumber', 'company.buildingName', 'company.county', 'company.postcode'],
+        required_fields: ['company.name', 'company.buildingNumber', 'company.county', 'company.postcode'],
     },
     {
         name: 'supply_details',
         title: 'Your Supply Details',
-        required_fields: ['site.name', 'site.buildingNumber', 'site.buildingName', 'site.county', 'site.postcode'],
+        required_fields: ['site.name', 'site.buildingNumber', 'site.county', 'site.postcode'],
     },
     {
         name: 'billing_details',
         title: 'Your Billing Preferences',
-        required_fields: ['billingAddress.buildingNumber', 'billingAddress.buildingName', 'billingAddress.county', 'billingAddress.postcode'],
+        required_fields: ['billingAddress.buildingNumber',  'billingAddress.county', 'billingAddress.postcode'],
     },
     {
         name: 'payment_details',
@@ -61,7 +61,16 @@ interface PaymentStepProps {
     handleBackClick: () => void;
 }
 
-export default function PaymentStep({onNext, offerData, dealData, setDealData, setOfferData, saveDeal, setCompanyAddress, handleBackClick}: PaymentStepProps) {
+export default function PaymentStep({
+                                        onNext,
+                                        offerData,
+                                        dealData,
+                                        setDealData,
+                                        setOfferData,
+                                        saveDeal,
+                                        setCompanyAddress,
+                                        handleBackClick
+                                    }: PaymentStepProps) {
     const [skipPayment, setSkipPayment] = useState<number>(0);
     const [addressPreference, setAddressPreference] = useState<string>('');
     const [currentTab, setCurrentTab] = useState<number>(0);
@@ -123,6 +132,7 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
         setAddressPreference(pref);
         if (pref) {
             setDealData('billingAddress', {
+                preferredAddress: pref,
                 buildingNumber: dealData[pref].buildingNumber,
                 buildingName: dealData[pref].buildingName,
                 thoroughfareName: dealData[pref].thoroughfareName,
@@ -131,11 +141,13 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                 postcode: dealData[pref].postcode,
                 poBox: dealData[pref].poBox,
             });
+        } else {
+            setDealData('billingAddress.preferredAddress', '');
         }
     }
 
     const handleStepClick = (stepIndex: number) => {
-        if (stepIndex < currentTab || pendingStep > currentTab) {
+        if (stepIndex < currentTab || pendingStep >= stepIndex) {
             setCurrentTab(stepIndex);
         }
         return;
@@ -272,7 +284,7 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
 
     function dobRequired(check_value = true) {
         if (dealData?.customer?.dateOfBirth && check_value) {
-            return false;
+            //return false;
         }
 
         if (dealData?.company?.type !== 'Limited' || isNewCompany()) {
@@ -322,9 +334,12 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                             >
                                 {step.title}
                                 {index < currentTab || pendingStep > index ? (
-                                    <Image className="mr-3 inline-block float-right md:float-none lg:float-right" src="/images/icons/check.png" width={15}/>
+                                    <Image className="mr-3 inline-block float-right md:float-none lg:float-right"
+                                           src="/images/icons/check.png" width={15}/>
                                 ) : (
-                                    <Image className="mr-3 inline-block float-right md:float-none lg:float-right" src="/images/icons/check.png" style={{filter: "grayscale(1)", opacity: 0}} width={15}/>
+                                    <Image className="mr-3 inline-block float-right md:float-none lg:float-right"
+                                           src="/images/icons/check.png" style={{filter: "grayscale(1)", opacity: 0}}
+                                           width={15}/>
                                 )}
 
                             </li>))}
@@ -334,9 +349,12 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                     {steps.map((step, index) => (currentTab == index &&
                         <div key={index} id={`tab${index}`}>
                             {step.name == 'contact_details' ? (
-                                <ContactDetails isNewCompany={isNewCompany} dobRequired={dobRequired} setData={setData} dealData={dealData} setDealData={setDealData}/>
+                                <ContactDetails isNewCompany={isNewCompany} dobRequired={dobRequired} setData={setData}
+                                                dealData={dealData} setDealData={setDealData}/>
                             ) : step.name == 'business_details' ? (
-                                <BusinessDetails dobRequired={dobRequired} setData={setData} setCompanyAddress={setCompanyAddress} setOfferData={setOfferData} setDealData={setDealData} dealData={dealData}/>
+                                <BusinessDetails dobRequired={dobRequired} setData={setData}
+                                                 setCompanyAddress={setCompanyAddress} setOfferData={setOfferData}
+                                                 setDealData={setDealData} dealData={dealData}/>
                             ) : step.name == 'supply_details' ? (
                                 <SupplyDetails setData={setData} dealData={dealData}/>
                             ) : step.name == 'billing_details' ? (
@@ -344,7 +362,6 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                                     setData={setData}
                                     dealData={dealData}
                                     preferenceClickHandler={preferenceClickHandler}
-                                    addressPreference={addressPreference}
                                 />
                             ) : step.name == 'payment_details' ? (
                                 <PaymentDetails
@@ -352,6 +369,7 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                                     dealData={dealData}
                                     skipPayment={skipPayment}
                                     setSkipPayment={setSkipPayment}
+                                    setDealData={setDealData}
                                 />
 
                             ) : (
@@ -360,7 +378,8 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
 
                             <div className="mt-4 mb-2 text-center ">
                                 {validationError && <div className="mt-0 mb-2 text-center">
-                                    <div className="p-3 py-1 border border-danger text-danger inline-block "> {validationError}</div>
+                                    <div
+                                        className="p-3 py-1 border border-danger text-danger inline-block "> {validationError}</div>
                                 </div>}
                                 {step.name == 'finalize' ? (
                                     <div className="inline-block " onClick={() => finalize(index)}>
@@ -373,7 +392,9 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                                 )}
                                 {/**/}
                             </div>
-                            <p className='text-semibold mt-4 text-slate-500 text-center'><i className="fa-solid fa-lock text-blue mr-2"></i>Your Personal Data is Protected & Secured</p>
+                            <p className='text-semibold mt-4 text-slate-500 text-center'><i
+                                className="fa-solid fa-lock text-blue mr-2"></i>Your Personal Data is Protected &
+                                Secured</p>
 
                             <div className="text-center">
                                 <button className='mt-4 mb-2 bg-slate-100 border px-5 py-2' onClick={handleBackClick}>
@@ -398,7 +419,8 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                                 </div>
                             )}
                             {apiSuccess && (
-                                <div className={'mt-5 mb-3 p-2 border border-green-500 text-left font-bold text-gree-500'}>{apiSuccess}</div>
+                                <div
+                                    className={'mt-5 mb-3 p-2 border border-green-500 text-left font-bold text-gree-500'}>{apiSuccess}</div>
                             )}
                         </>
                     )}
@@ -413,10 +435,13 @@ export default function PaymentStep({onNext, offerData, dealData, setDealData, s
                                     <i className="fas fa-check"></i>
                                 </div>
                             </div>
-                            <h2 className='mb-4'>Your <b>Contract</b> has been successfully submitted!</h2>
-                            <p>A docusign will be sent shortly, to your email <span className='text-blue underline font-medium'>{dealData.customer.email}</span>. <br/>
+                            <h2 className='mb-4'>Your <b>Contract</b> has been successfully processed!</h2>
+                            <p>A docusign will be sent shortly, to your email <span
+                                className='text-blue underline font-medium'>{dealData.customer.email}</span>. <br/>
                                 Kindly ESign that contract and complete the journey.</p>
-                            <button type="button" onClick={handleCloseModal} className="mt-4 mb-2 bg-slate-100 border px-5 py-2">OK</button>
+                            <button type="button" onClick={handleCloseModal}
+                                    className="mt-4 mb-2 bg-slate-100 border px-5 py-2">OK
+                            </button>
                         </Modal.Body>
                     </Modal>
                 </div>

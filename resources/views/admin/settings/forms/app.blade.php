@@ -38,3 +38,14 @@
         </div>
     </div>
 </div>
+<hr/>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="notification-email">Send Notifications To:</label>
+            <input type="email" name="values[notification-email]" id="notification-email" class="form-control"
+                   value="{{ data_get($setting->values,'notification-email') }}" placeholder="Enter notification email">
+            <div class="help-block">Set email for receiving all notifications like deal created etc.</div>
+        </div>
+    </div>
+</div>

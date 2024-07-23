@@ -7,11 +7,16 @@ use App\Http\Integrations\Powwr\Requests\OffersRequest;
 use App\Http\Integrations\Powwr\Services;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\PowwrOffers;
-use App\Models\PowwrSupplier;
+use App\Models\Deals;
+use App\Models\Suppliers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class OffersController extends ApiController
 {
 
@@ -23,7 +28,140 @@ class OffersController extends ApiController
         'Engie',
     ];
 
+    protected $ygp_plans = [
+        0 => [
+            'Duration' => 12,
+            'PlanType' => 'Economy',
+            'Uplift' => 3,
+        ],
+        1 => [
+            'Duration' => 12,
+            'PlanType' => 'Economy|Renewable',
+            'Uplift' => 3,
+        ],
+        2 => [
+            'Duration' => 12,
+            'PlanType' => 'Premium HR',
+            'Uplift' => 3,
+        ],
+        3 => [
+            'Duration' => 12,
+            'PlanType' => 'Premium HR|Renewable',
+            'Uplift' => 3,
+        ],
+        4 => [
+            'Duration' => 24,
+            'PlanType' => 'Economy',
+            'Uplift' => 3,
+        ],
+        5 => [
+            'Duration' => 24,
+            'PlanType' => 'Economy|Renewable',
+            'Uplift' => 3,
+        ],
+        6 => [
+            'Duration' => 24,
+            'PlanType' => 'Premium HR',
+            'Uplift' => 3,
+        ],
+        7 => [
+            'Duration' => 24,
+            'PlanType' => 'Premium HR|Renewable',
+            'Uplift' => 3,
+        ],
+        8 => [
+            'Duration' => 36,
+            'PlanType' => 'Economy',
+            'Uplift' => 3,
+        ],
+        9 => [
+            'Duration' => 36,
+            'PlanType' => 'Economy|Renewable',
+            'Uplift' => 3,
+        ],
+        10 => [
+            'Duration' => 36,
+            'PlanType' => 'Premium HR',
+            'Uplift' => 3,
+        ],
+        11 => [
+            'Duration' => 36,
+            'PlanType' => 'Premium HR|Renewable',
+            'Uplift' => 3,
+        ],
+        12 => [
+            'Duration' => 48,
+            'PlanType' => 'Economy',
+            'Uplift' => 3,
+        ],
+        13 => [
+            'Duration' => 48,
+            'PlanType' => 'Economy|Renewable',
+            'Uplift' => 3,
+        ],
+        14 => [
+            'Duration' => 48,
+            'PlanType' => 'Premium HR',
+            'Uplift' => 3,
+        ],
+        15 => [
+            'Duration' => 48,
+            'PlanType' => 'Premium HR|Renewable',
+            'Uplift' => 3,
+        ],
+        16 => [
+            'Duration' => 60,
+            'PlanType' => 'Economy',
+            'Uplift' => 3,
+        ],
+        17 => [
+            'Duration' => 36,
+            'PlanType' => 'Economy|Renewable',
+            'Uplift' => 3,
+        ],
+        18 => [
+            'Duration' => 60,
+            'PlanType' => 'Premium HR',
+            'Uplift' => 3,
+        ],
+        19 => [
+            'Duration' => 36,
+            'PlanType' => 'Premium HR|Renewable',
+            'Uplift' => 3,
+        ],
+    ];
+
+    protected $britishGasDefaultPlans = [
+        [
+            "Duration" => 12,
+            "PlanType" => "",
+
+        ],
+        [
+            "Duration" => 24,
+            "PlanType" => ""
+
+        ],
+        [
+            "Duration" => 36,
+            "PlanType" => ""
+        ],
+        [
+            "Duration" => 48,
+            "PlanType" => ""
+
+        ],
+        [
+            "Duration" => 60,
+            "PlanType" => ""
+        ]
+    ];
+
     /**
+     * Offers
+     *
+     * Offers from udcoreapi.co.uk
+     *
      * @param LoginRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -51,20 +189,40 @@ class OffersController extends ApiController
         }
 
         if ($apiResponse->status() == 200) {
+            $preferred_suppliers = Suppliers::$preferred_suppliers;
+
             $result = $apiResponseBody['GetGasRatesResult'] ?? $apiResponseBody['GetElectricRatesResult'] ?? [];
-            $rates = $result['Rates'] ?? [];
+            $resultRates = $result['Rates'] ?? [];
+            $rates = [];
 
-            $rates = collect($rates)->reject(function ($item) {
-                return ($item['AnnualPrice'] == null || $item['AnnualPrice'] == '');
+            foreach ($resultRates as $key => $rate) {
+                $Supplier = $rate['Supplier'] ?? '';
+                $PlanType = $rate['PlanType'] ?? '';
+                $rate['Preferred'] = ($rate['Term'] == 24 && in_array($Supplier, $preferred_suppliers) ? 1 : 0);
+
+                if (
+                    strtolower($Supplier) == 'yorkshire gas and power' && $PlanType &&
+                    !in_array($PlanType, ['Economy', 'Premium HR', 'Economy|Renewable', 'Premium HR|Renewable'])
+                ) {
+                    continue;
+                }
+                if (in_array(strtolower($Supplier), ['yorkshire gas and power', 'british gas', 'british gas lite', 'totalenergies', 'opus energy', 'yu energy'])) {
+                    if ($rate['RawAnnualPrice']) {
+                        $key = md5($PlanType . $rate['Term'] . $rate['RawAnnualPrice']);
+                        $rates[$key] = $rate;
+                    }
+                } else {
+                    $rates[$key] = $rate;
+                }
+            }
+
+            $rates = collect(array_values($rates))->reject(function ($item) {
+                return ($item['RawAnnualPrice'] == null || $item['RawAnnualPrice'] == '');
             });
-
-            $preferred_suppliers = PowwrSupplier::$preferred_suppliers;
 
             $minPrice = $rates->where('RawAnnualPrice', '>', 0)->min('RawAnnualPrice');
             $rates->transform(function ($row) use ($minPrice, $preferred_suppliers) {
-                $Supplier = $row['Supplier'] ?? '';
                 $row['BestDeal'] = ($row['RawAnnualPrice'] == $minPrice);
-                $row['Preferred'] = ($row['Term'] == 24 && in_array($Supplier, $preferred_suppliers) ? 1 : 0);
                 return $row;
             });
 
@@ -93,13 +251,35 @@ class OffersController extends ApiController
         return response()->json($responseData, $apiResponse->status());
     }
 
+    /**
+     *
+     * @param Request $request
+     * @return array
+     *
+     */
     protected function getBody(Request $request)
     {
-        $suppliers = PowwrSupplier::apiSuppliers();
+
+        $deal = null;
+        if ($dealId = $request->dealId) {
+            $deal = Deals::where('id', $dealId)->first();
+        }
+
+        $allowedSuppliers = $deal ? $deal->allowedSuppliers : [];
+        $suppliers = Suppliers::apiSuppliers();
 
         $utilityType = strtolower($request->utilityType);
         $meterNumber = $request->meterNumber;
-        $currentSupplier = $request->currentSupplierName;
+        $currentSupplier = $request->currentSupplier;
+        $contractEnded = $request->contractEnded;
+        $newSuppliers = $request->input('newSupplier');
+
+        $uplift = $request->input('plans.uplift');
+        $upliftSupplier = $request->input('plans.supplier');
+
+        if ($upliftSupplier && $upliftSupplier != $newSuppliers) {
+            $uplift = null;
+        }
 
         $quoteDetails = [];
 
@@ -107,7 +287,7 @@ class OffersController extends ApiController
             'quoteReference' => 'QuoteReference',
             'postCode' => 'PostCode',
             'renewal' => 'Renewal',
-            'currentSupplierName' => 'CurrentSupplier',
+            'currentSupplier' => 'CurrentSupplier',
             'cot' => 'COT',
             'cotDate' => 'CotDate',
             'outOfContract' => 'OutOfContract',
@@ -119,7 +299,7 @@ class OffersController extends ApiController
         ];
 
         $quoteDetails['SupplyType'] = $utilityType == 'gas' ? 'gas' : 'elec';
-        $quoteDetails['Uplift'] = 0.2;
+        $quoteDetails['Uplift'] = 2;
 
         foreach ($attributeMapping as $key => $mapped) {
             if ($request->filled($key)) {
@@ -143,7 +323,8 @@ class OffersController extends ApiController
             'contractRenewalDate' => 'ContractRenewalDate',
             'contractEndDate' => 'ContractEndDate',
             'newContractEndDate' => 'NewContractEndDate',
-            'curentSupplier' => 'CurentSupplier',
+            'measurementClass' => 'MeasurementClass',
+            'currentSupplier' => 'CurentSupplier',
             'smartMeter' => 'SmartMeter',
         ];
 
@@ -156,11 +337,15 @@ class OffersController extends ApiController
                 }
                 $supply[$mapped] = $value;
             } else {
-                $supply[$mapped] = null;
+                $supply[$mapped] = '';
             }
         }
 
-        if (!isset($supply['SmartMeter'])) {
+        if ($contractEnded) {
+            $supply['ContractEndDate'] = Carbon::now()->toDateString();
+        }
+
+        if (!isset($supply['SmartMeter']) || !$supply['SmartMeter']) {
             $supply['SmartMeter'] = false;
         }
 
@@ -179,27 +364,57 @@ class OffersController extends ApiController
         } else {
             $electricSupply = $supply;
 
-            $electricSupply['MPANTop'] = $request->input('MPANTop');
+            if ($newSuppliers == 'abc') {
+                $electricSupply['StandardSettlementConfig'] = 0317;
+            }
+
+            $electricSupply['MPANTop'] = $request->input('mpanTop');
             $electricSupply['MPANBottom'] = $meterNumber;
             $meterType = $request->input('meterType');
             if ($meterType && !Str::contains($meterType, '@')) {
                 $electricSupply['MeterType'] = $meterType;
             }
+
+            $prompts = $request->input('prompts', []);
+
+            if (!is_array($prompts)) {
+                $prompts = explode(',', $prompts);
+            }
+
             $cons_day = ($request->input('consumption.day') ?: $request->input('consumption.amount'));
+            $cons_night = $request->input('consumption.night') ?: 0;
+            $cons_wend = $request->input('consumption.wend') ?: 0;
 
             if ($cons_day) {
+                $needNightConsumption = in_array('Night', $prompts);
+
+                $needWendConsumption = in_array('Wend', $prompts) || in_array('Weekend', $prompts);
+
+                if (($needNightConsumption && !$cons_night) || $needWendConsumption && !$cons_wend) {
+                    $dc = $cons_day;
+                    if ($needNightConsumption && !$cons_night) {
+                        $cons_night = ($cons_day * 15) / 100;
+                        $dc = $dc - $cons_night;
+                    }
+
+                    if ($needWendConsumption && !$cons_wend) {
+                        $cons_wend = ($cons_day * 15) / 100;
+                        $dc = $dc - $cons_night;
+                    }
+
+                    $cons_day = $dc;
+                }
+
                 $electricSupply['DayConsumption'] = [
                     "Amount" => $cons_day,
                     "Type" => 'Day'
                 ];
 
-                $cons_night = $request->input('consumption.night') ?: 0;
                 $electricSupply['NightConsumption'] = [
                     "Amount" => $cons_night,
                     "Type" => 'Night'
                 ];
 
-                $cons_wend = $request->input('consumption.wend') ?: 0;
                 $electricSupply['WendConsumption'] = [
                     "Amount" => $cons_wend,
                     "Type" => 'Weekend'
@@ -232,42 +447,47 @@ class OffersController extends ApiController
         }
 
         $QuoteDefinitions = [];
-        $newSuppliers = $request->input('newSupplierName');
         if ($newSuppliers && !is_array($newSuppliers)) {
             $newSuppliers = explode(',', $newSuppliers);
         }
 
         if (!empty($newSuppliers)) {
             foreach ($newSuppliers as $name) {
-                $IsRenewal = $currentSupplier == $name;
-                $plans = $suppliers[$name] ?? [];
-                if (!empty($plans)) {
-                    $_plans = $this->getPlans($name, $plans, $utilityType, $duration, $IsRenewal);
-                    if (!empty($_plans)) {
-                        $QuoteDefinitions[] = [
-                            'Supplier' => $name,
-                            'Plans' => $_plans,
-                        ];
+                if (empty($allowedSuppliers) || in_array($name, $allowedSuppliers)) {
+                    $plans = $suppliers[$name] ?? [];
+                    if (!empty($plans)) {
+                        $IsRenewal = $currentSupplier == $name;
+                        if ($IsRenewal) {
+                            $quoteDetails['Renewal'] = true;
+                        }
+                        $_plans = $this->getPlans($name, $plans, $utilityType, $duration, $IsRenewal, $uplift);
+                        if (!empty($_plans)) {
+                            $QuoteDefinitions[] = [
+                                'Supplier' => $name,
+                                'Plans' => $_plans,
+                            ];
+                        }
                     }
                 }
             }
             $quoteDetails['QuoteDefinitions'] = $QuoteDefinitions;
         } else {
             foreach ($suppliers as $supplier => $plans) {
-                if (!empty($plans) && $supplier != 'BES') {
-                    $IsRenewal = $currentSupplier == $supplier;
-                    $_plans = $this->getPlans($supplier, $plans, $utilityType, $duration, $IsRenewal);
-                    if (!empty($_plans)) {
-                        $QuoteDefinitions[] = [
-                            'Supplier' => $supplier,
-                            'Plans' => $_plans,
-                        ];
+                if (empty($allowedSuppliers) || in_array($supplier, $allowedSuppliers)) {
+                    if (!empty($plans) && $supplier != 'BES') {
+                        $IsRenewal = $currentSupplier == $supplier;
+                        $_plans = $this->getPlans($supplier, $plans, $utilityType, $duration, $IsRenewal, $uplift);
+                        if (!empty($_plans)) {
+                            $QuoteDefinitions[] = [
+                                'Supplier' => $supplier,
+                                'Plans' => $_plans,
+                            ];
+                        }
                     }
                 }
             }
             $quoteDetails['QuoteDefinitions'] = $QuoteDefinitions;
         }
-
 
         $quoteDetails['SortByCommission'] = (boolean)$request->input('sortByCommission', false);
 
@@ -296,209 +516,111 @@ class OffersController extends ApiController
      * @return array
      */
 
-    protected function getPlans($supplier, $plans, $utilityType, $duration, $IsRenewal)
+    protected function getPlans($supplier, $plans, $utilityType, $duration, $IsRenewal, $CustomUplift = null)
     {
         $halfHourly = request('halfHourly', false);
         $output = [];
         if ($halfHourly && !in_array($supplier, $this->halfHourlySuppliers)) {
             return $output;
         }
-        foreach ($plans as $key => $plan) {
 
-            $PlanType = $plan['PlanType'] ?: '';
-            $Utility = $plan['Utility'];
+        if (strtolower($supplier) == 'yorkshire gas and power') {
+            $plans = array_values($this->ygp_plans);
+            foreach ($plans as $plan) {
+                $PlanDuration = $plan['Duration'];
+                if ($PlanDuration && $PlanDuration % 12 == 0) {
+                    if (!$duration || $PlanDuration == $duration) {
+                        if ($CustomUplift) {
+                            $plan['Uplift'] = $CustomUplift;
+                        }
+                        $output[] = $plan;
+                    }
+                }
+            }
+            return array_values($output);
+        }
+
+        if (strtolower($supplier) == 'british gas') {
+            $bgPlans = array_values($this->britishGasDefaultPlans);
+            foreach ($bgPlans as $bgPlan) {
+                $bgPlanDuration = $bgPlan['Duration'];
+                if (!$duration || $bgPlanDuration == $duration) {
+                    $bgUplift = $CustomUplift ?: $this->getUplift($supplier, $utilityType, $bgPlan['Duration'] ?? 12, $IsRenewal);
+                    $output[] = [
+                        'Duration' => $bgPlan['Duration'],
+                        'PlanType' => $bgPlan['PlanType'],
+                        'Uplift' => $bgUplift,
+                    ];
+                }
+            }
+        }
+
+        $plans = array_filter($plans, function ($a) use ($utilityType) {
+            return strtolower($a['Utility']) == strtolower($utilityType);
+        });
+
+        foreach ($plans as $plan) {
+            $Utility = strtolower($plan['Utility']);
             $PlanDuration = $plan['Duration'];
+            $PriceChangeDate = Carbon::parse($plan['LastPriceChange'])->format('Y-m-d H:i');
             $LastPriceChange = Carbon::parse($plan['LastPriceChange'])->diffInMonths();
+            $PlanType = $plan['PlanType'];
 
-            if ($LastPriceChange <= 2) {
-                if (strtolower($Utility) == $utilityType && (!$duration || $PlanDuration == $duration)) {
-                    $uplift = $this->getUplift($supplier, $utilityType, $PlanDuration, $IsRenewal);
-                    $arrayKey = md5($key . $PlanDuration . $PlanType);
+            /*if (
+                $PlanType && strtolower($supplier) == 'yorkshire gas and power' &&
+                !in_array(strtolower($PlanType), ['economy', 'premium hr', 'economy|renewable', 'premium hr|renewable'])
+            ) {
+                continue;
+            }*/
+
+            if (
+                strtolower($supplier) == 'utilita' ||
+                (strtolower($supplier) == 'british gas' && strtolower($PlanType) == 'non-renewable') ||
+                (strtolower($supplier) == 'engie' && Str::contains(strtolower($PlanType), 'eoc')) ||
+                (
+                    strtolower($supplier) == 'scottish and southern' &&
+                    Str::contains(strtolower($PlanType), 'renewable') &&
+                    $utilityType == 'electric'
+                )
+            ) {
+                continue;
+            }
+
+            if (!$PlanType && $Utility == 'electric' && strtolower($supplier) == 'totalenergies') {
+                $PlanType = 'Eco Energy|Renewable';
+            }
+
+            if ($LastPriceChange <= 2 && $PlanDuration && $PlanDuration % 12 == 0) {
+                if ($Utility == $utilityType && (!$duration || $PlanDuration == $duration)) {
+                    $uplift = $CustomUplift ?: $this->getUplift($supplier, $utilityType, $PlanDuration, $IsRenewal);
+                    $arrayKey = Str::slug($supplier . $PriceChangeDate . $PlanDuration . $PlanType);
                     if (!key_exists($arrayKey, $output)) {
                         $output[$arrayKey] = [
                             'Duration' => $PlanDuration,
                             'PlanType' => $PlanType,
-                            'Uplift' => $uplift ?: 4
+                            'Uplift' => $uplift ?: 2
                         ];
-                        if(!$PlanType){
-                            //unset($output[$arrayKey]['PlanType']);
-                        }
                     }
                 }
             }
         }
+
+        $output = array_values($output);
+
         return array_values($output);
     }
 
     protected function getUplift($supplier, $type, $term, $IsRenewal = false)
     {
 
-        $list = [
-            'British Gas' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ]
-            ],
-            'British Gas Lite' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ]
-            ],
-            'British Gas Plus' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ]
-            ],
-            'Corona Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 3, 'renewal' => null]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2, 'renewal' => null]
-                ]
-            ],
-            'Drax' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ]
-            ],
-            'Dyce Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 3, 'renewal' => 1]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 3, 'renewal' => 1]
-                ]
-            ],
-            'E-ON Next' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ]
-            ],
-            'EDF' => [
-                'electric' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    2 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    3 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    4 => ['uplift' => 1.5, 'renewal' => 1.5],
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    2 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    3 => ['uplift' => 1.5, 'renewal' => 1.5],
-                    4 => ['uplift' => 1.5, 'renewal' => 1.5],
-                ]
-            ],
-            'Engie' => [
-                'electric' => [
-                    1 => ['uplift' => 4, 'renewal' => 1]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2.5, 'renewal' => 1]
-                ]
-            ],
-            'OPUS' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => null]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => null]
-                ]
-            ],
-            'Scottish And Southern' => [
-                'electric' => [
-                    1 => ['uplift' => 2.5, 'renewal' => 2.5]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ]
-            ],
-            'Scottish Power' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2],
-                    2 => ['uplift' => 2, 'renewal' => 2],
-                    3 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 0, 'renewal' => 1],
-                    2 => ['uplift' => 0, 'renewal' => 1],
-                    3 => ['uplift' => 0, 'renewal' => 0],
-                ]
-            ],
-            'SEFE Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ]
-            ],
-            'Smartest Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1, 'renewal' => 1]
-                ]
-            ],
-            'TotalEnergies' => [
-                'electric' => [
-                    1 => ['uplift' => 3, 'renewal' => 3]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ]
-            ],
-            'Utilita' => [
-                'electric' => [
-                    1 => ['uplift' => 3, 'renewal' => 3],
-                    2 => ['uplift' => 3, 'renewal' => 3],
-                    3 => ['uplift' => 3, 'renewal' => 3]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 0, 'renewal' => null],
-                    2 => ['uplift' => 0, 'renewal' => null],
-                    3 => ['uplift' => 0, 'renewal' => null]
-                ]
-            ],
-            'Valda Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 2.5, 'renewal' => 2.5]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 1.5, 'renewal' => 1.5]
-                ]
-            ],
-            'Yorkshire Gas And Power' => [
-                'electric' => [
-                    1 => ['uplift' => 3, 'renewal' => null]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2, 'renewal' => null]
-                ]
-            ],
-            'Yu Energy' => [
-                'electric' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ],
-                'gas' => [
-                    1 => ['uplift' => 2, 'renewal' => 2]
-                ]
-            ]
-        ];
+        $plans = Suppliers::where('name', $supplier)->first();
 
-        $uplifts = $list[$supplier][$type] ?? null;
+        $type = strtolower($type);
+        $term = $term > 9 ? $term / 12 : $term;
+        $key = $IsRenewal ? 'renewal' : 'uplift';
+
+        $uplifts = $plans->uplifts[$type] ?? null;
         if (is_array($uplifts)) {
-            $key = $IsRenewal ? 'renewal' : 'uplift';
             return isset($uplifts[$term]) ? $uplifts[$term][$key] : $uplifts[1][$key];
         }
         return null;

@@ -37,54 +37,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     user: UserProps;
 };
 
-// export interface MyFormData {
-//     utilityType: string;
-//     meterNumber: string;
-//     supplierId: string;
-//     customer: {
-//         title: string;
-//         firstName: string;
-//         lastName: string;
-//         email: string;
-//         phone: string;
-//         buildingName: string;
-//         subBuildingName: string;
-//         buildingNumber: string;
-//         county: string;
-//         postTown: string;
-//         postcode: string;
-//         poBox: string;
-//     };
-//     customerCompany: {
-//         name: string;
-//         type: string;
-//         number: string;
-//         buildingName: string;
-//         subBuildingName: string;
-//         buildingNumber: string;
-//         county: string;
-//         postTown: string;
-//         postcode: string;
-//         poBox: string;
-//     };
-//     site: {
-//         name: string;
-//         buildingName: string;
-//         subBuildingName: string;
-//         buildingNumber: string;
-//         county: string;
-//         postTown: string;
-//         postcode: string;
-//         poBox: string;
-//     };
-//     contract: {
-//         currentSupplier: string;
-//         currentEndDate: string;
-//         startDate: string;
-//         endDate: string;
-//     };
-// }
-
 export interface MyFormData {
     utilityType: string;
     meterNumber: string;

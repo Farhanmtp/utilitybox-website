@@ -1,43 +1,55 @@
 import React, {useEffect, useState} from 'react';
-import {range} from "@/utils/helper";
-import DatePicker from "react-datepicker";
+import {format_date} from "@/utils/helper";
+import moment from "moment";
+import DatePickerField from "@/Components/elements/DatePickerField";
 
 interface Props {
     dealData?: any,
     setData: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void,
     skipPayment: number
-    setSkipPayment: (skipPayment: number) => void
-    // setDealData: (name: string, value: any) => void,
+    setSkipPayment: (skipPayment: number) => void,
+    setDealData: (name: string, value: any) => void,
 }
 
-export default function PaymentDetails({setData, dealData, setSkipPayment, skipPayment}: Props) {
-    const [hideCheckbox, setHideCheckbox] = useState<number>(0);
-    const [skipValid, setSkipValid] = useState<number>(0);
+export default function PaymentDetails({setData, dealData, setSkipPayment, skipPayment, setDealData}: Props) {
+    const [showCheckbox, setShowCheckbox] = useState(false);
     const [needPayment, setNeedPayment] = useState<number>(1);
+    const [addressRequired, setAddressRequired] = useState<boolean>(false);
+
+    const ddSuppliers = [
+        'Drax',
+        'Opus',
+        'SEFE Energy',
+        'Scottish And Southern',
+        'TotalEnergies',
+        'Yorkshire Gas and Power',
+        'Yu Energy',
+    ]
+
+    useEffect(() => {
+        console.log(dealData.quoteDetails.Supplier);
+        if (dealData.quoteDetails.Supplier && ddSuppliers.indexOf(dealData.quoteDetails.Supplier) != -1) {
+            setAddressRequired(true);
+        } else {
+            setAddressRequired(false)
+        }
+    }, []);
 
     useEffect(() => {
         if (
-            dealData.contract.newSupplier === "BRITISHG-001-S" ||
-            dealData.contract.newSupplier === "BRITISHG-002-S" ||
-            dealData.contract.newSupplier === "SSE-001-S" ||
-            dealData.contract.newSupplier === "SMARTEST-001-S" ||
-            dealData.contract.newSupplier === "SCOTTISH-001-S" ||
-            dealData.contract.newSupplier === "POZITIVE-001-S" ||
-            dealData.contract.newSupplier === "EON-001-S"
+            dealData.quoteDetails.Supplier === "British Gas" ||
+            dealData.quoteDetails.Supplier === "British Gas Lite" ||
+            dealData.quoteDetails.Supplier === "Scottish And Southern" ||
+            dealData.quoteDetails.Supplier === "Smartest Energy" ||
+            dealData.quoteDetails.Supplier === "Scottish Power" ||
+            dealData.quoteDetails.Supplier === "POZITIVE-001-S" ||
+            dealData.quoteDetails.Supplier === "EDF Energy"
         ) {
-            if (dealData.contract.currentSupplier === dealData.contract.newSupplier) {
-                setSkipValid(0);
-                setHideCheckbox(1);
-                // setSkipPayment(1);
-            } else {
-                // setSkipValid(0);
-                // setSkipPayment(0);
+            if (dealData.contract.currentSupplier === dealData.quoteDetails.Supplier) {
+                setShowCheckbox(true);
             }
-        } else {
-            // setSkipValid(0);
-            // setSkipPayment(0);
         }
-    }, [dealData.contract.newSupplier, dealData.contract.currentSupplier]);
+    }, [dealData.quoteDetails.Supplier, dealData.contract.currentSupplier]);
 
     const [dateOfBirth, setDateOfBirth] = useState(null);
 
@@ -47,32 +59,9 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
         // setDealData('customer.dateOfBirth', value || '');
     };
 
-
     return (
         <>
             <div className="grid grid-cols-2 gap-4">
-                {/* <div className={'col-span-2'}>
-                    <label>Do you wnat to skip this</label>
-                    <div className={'w-full mb-1'}>
-                        <label className={`btn-radio ${skipPayment == 1 ? 'active' : ''}`}>
-                            <input
-                                className='ml-0' type="radio" name="skipPayment"
-                                value="1"
-                                checked={skipPayment === 1} onChange={() => {
-                                setSkipPayment(1)
-                            }}
-                            /> Yes </label>
-
-                        <label className={`btn-radio ${skipPayment == 0 ? 'active' : ''}`}>
-                            <input
-                                className='ml-0' type="radio" name="skipPayment"
-                                value="0"
-                                checked={skipPayment === 0} onChange={() => {
-                                setSkipPayment(0)
-                            }}
-                            /> No </label>
-                    </div>
-                </div> */}
                 {/*<div className={'col-span-2'}>
                     <div className={'w-full mb-1'}>
                         <label
@@ -103,41 +92,44 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
                     </div>
                 </div>*/}
 
-                {hideCheckbox === 1 && (
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={skipValid === 1}
-                            onChange={(e) => {
-                                setSkipValid(e.target.checked ? 1 : 0);
-                                setNeedPayment(e.target.checked ? 0 : 1);
-                                setSkipPayment(e.target.checked ? 0 : 1);
-                            }}
-                            className='mx-2'
-                        />
-                        By Agreeing to this we will be using your previous contract direct debit details.
-                    </label>
-                )}
-
-                {dealData.supplierId == 'EDF-001-S' && <>
-                    <div className={'w-full mb-1'}>
-                        <select
-                            value={dealData.paymentDetail?.directDebitDayOfMonth}
-                            onChange={setData}
-                            required={true}
-                            name="paymentDetail.directDebitDayOfMonth"
-                            className="input-field"
-                        >
-                            <option value="">Direct Debit DayOfMonth</option>
-                            {range(1, 31).map((item: number) => (
-                                <option value={item}>{item}</option>
-                            ))}
-                        </select>
+                {showCheckbox && (
+                    <div className={'col-span-2 font-bold'}>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={dealData.paymentDetail.usePreviousDirectDebitDetails}
+                                onChange={(e) => {
+                                    const checked = e.target.checked ? 1 : 0;
+                                    setNeedPayment(checked ? 0 : 1);
+                                    setSkipPayment(checked ? 0 : 1);
+                                    setDealData('paymentDetail.usePreviousDirectDebitDetails', (checked ? 1 : 0))
+                                }}
+                                className='mx-2'
+                            />
+                            By Agreeing to this we will be using your previous contract direct debit details.
+                        </label>
                     </div>
-
+                )}
+                {dealData.quoteDetails.Supplier == 'EDF Energy' && <>
+                    <div className={'w-full mb-1'}>
+                        <label className='mb-2'>Direct Debit Start Date</label><br/>
+                        <DatePickerField
+                            className="input-field-payment"
+                            value={dealData.paymentDetail?.directDebitDayOfMonth}
+                            placeholderText="Direct Debit Start Date"
+                            name="customer.dateOfBirth"
+                            required={true}
+                            dateFormat="dd/MM/yyyy"
+                            minDate={moment().startOf('month').toDate()}
+                            onChange={(date: any) => {
+                                const value = date ? format_date(date, 'db') : '';
+                                setDealData('paymentDetail.directDebitDayOfMonth', value);
+                            }}
+                        />
+                    </div>
                 </>}
 
-                {needPayment === 1 && (
+                {!dealData.paymentDetail.usePreviousDirectDebitDetails && (
                     <>
                         <div className={'col-span-2 font-bold'}>Account Details:</div>
 
@@ -162,6 +154,7 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
                                 type="text"
                                 name="bankDetails.branchName"
                                 title="Branch Name*"
+                                //required={addressRequired}
                                 placeholder="Enter Branch Name"
                                 value={dealData.bankDetails?.branchName}
                                 onChange={setData}
@@ -178,7 +171,11 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
                                 title="Sort Code*"
                                 placeholder="Enter Sort Code"
                                 value={dealData.bankDetails?.sortCode}
-                                onChange={setData}
+                                //onChange={setData}
+                                onChange={(e) => {
+                                    e.target.value = e.target.value.slice(0, 6)
+                                    setData(e)
+                                }}
                                 maxLength={6}
                             />
                         </div>
@@ -192,7 +189,11 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
                                 title="Account Number*"
                                 placeholder="Enter Account Number"
                                 value={dealData.bankDetails?.accountNumber}
-                                onChange={setData}
+                                //onChange={setData}
+                                onChange={(e) => {
+                                    e.target.value = e.target.value.slice(0, 8)
+                                    setData(e)
+                                }}
                                 maxLength={8}
                             />
                         </div>
@@ -265,27 +266,12 @@ export default function PaymentDetails({setData, dealData, setSkipPayment, skipP
                         type="text"
                         name="bankAddress.postcode"
                         title="PostCode*"
+                        required={addressRequired}
                         placeholder="Enter Post Code"
                         value={dealData.bankAddress?.postcode}
                         onChange={setData}
                     />
                 </div>
-
-                {dealData?.contract?.currentSupplier == "EDF-001-S" && (
-                    <div className={'w-full mb-1'}>
-                        <label className='mb-2'>Direct Debit Start Date</label><br/>
-                        <DatePicker
-                            className="input-field disabled"
-                            // selected={directDebitStart}
-                            onChange={(date) => handleDDStart(date)}
-                            // required={dobRequired()}
-                            title="Date of birth"
-                            placeholderText="Date of birth"
-                            dateFormat="dd/MM/yyyy"
-                            shouldCloseOnSelect={true}
-                        />
-                    </div>
-                )}
 
 
             </div>

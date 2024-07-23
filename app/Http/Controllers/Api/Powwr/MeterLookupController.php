@@ -12,10 +12,17 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class MeterLookupController extends ApiController
 {
 
     /**
+     * Meter Lookup
+     *
+     * Find address against postcode
      * @param LoginRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -35,7 +42,7 @@ class MeterLookupController extends ApiController
 
         if (!empty($cachedAddresses)) {
 
-           // $output = $this->filterAddresses($cachedAddresses, $utilityType);
+            // $output = $this->filterAddresses($cachedAddresses, $utilityType);
 
             //return response()->json(['success' => true, 'data' => $output]);
         }
@@ -144,7 +151,7 @@ class MeterLookupController extends ApiController
             }
 
             $AddressAsLine = $address['addressasline'] ?? '';
-            $AddressAsLine = str_replace('Unknown','',$AddressAsLine);
+            $AddressAsLine = str_replace('Unknown', '', $AddressAsLine);
             $AddressAsLine = preg_replace('/,+/', ', ', $AddressAsLine);
             //$AddressAsLine = preg_replace('/,([a-z0-9])/i', ', ', $AddressAsLine);
             $row['addressfull'] = $address['addressasline'] = trim($AddressAsLine, ', ');
@@ -161,9 +168,12 @@ class MeterLookupController extends ApiController
             $addressline8 = $address['addressline8'] ?? '';
             $addressline9 = $address['addressline9'] ?? '';
 
+            $subbuilding = $address['subbuilding'] ?? $addressline3 ?? '';
+            $buildingnumber = $address['buildingnumber'] ?? $addressline5 ?? '';
             $buildingname = $address['buildingname'] ?? $addressline1 ?? $addressline4;
             $thoroughfare = $address['thoroughfare'] ?? $addressline6;
             $posttown = $address['posttown'] ?? $addressline8;
+            $county = $address['county'] ?? $addressline9;
 
             $address1 = [];
             if ($addressline1) {
@@ -175,9 +185,24 @@ class MeterLookupController extends ApiController
             if ($addressline3 && !in_array($addressline3, ['Unknown']) && !in_array($addressline3, $address1)) {
                 $address1[] = $addressline3;
             }
+            if ($subbuilding && !in_array($subbuilding, $address1) &&
+                !in_array($subbuilding, [$addressline4, $addressline5, $addressline6, $addressline7])) {
+                $address1[] = $subbuilding;
+            }
+
+
+            if ($buildingnumber && !in_array($buildingnumber, $address1) &&
+                !in_array($buildingnumber, [$addressline3, $addressline6, $addressline7])) {
+                $address1[] = $buildingnumber;
+            }
+
             if ($buildingname && !in_array($buildingname, $address1) &&
-                !in_array($buildingname, [$addressline4, $addressline5, $addressline6, $addressline7])) {
+                !in_array($buildingname, [$addressline3, $addressline5, $addressline6, $addressline7])) {
                 $address1[] = $buildingname;
+            }
+
+            if ($thoroughfare && !in_array($thoroughfare, ['Unknown']) && !in_array($thoroughfare, $address1)) {
+                $address1[] = $thoroughfare;
             }
 
             $address2 = [];
@@ -214,7 +239,7 @@ class MeterLookupController extends ApiController
             $row['addressline2'] = $_address2;
             $row['posttown'] = $posttown;
 
-            $row['county'] = $address['county'] ?? $addressline9;
+            $row['county'] = $county;
             $row['postcode'] = $address['postcode'] ?? '';
 
             ksort($row);
@@ -233,11 +258,6 @@ class MeterLookupController extends ApiController
             }));
         }
 
-        return [
-            'addressLines' => $addressesResult['AddressLines'] ?? [],
-            'addresses' => $addresses,
-            'output' => $output,
-            'cachedResult' => $addressesResult['CachedResult'] ?? false,
-        ];
+        return $addresses;
     }
 }

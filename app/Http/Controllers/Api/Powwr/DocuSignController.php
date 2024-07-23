@@ -8,6 +8,10 @@ use App\Http\Integrations\Powwr\Requests\AddDocuSignRequest;
 use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Http\Request;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class DocuSignController extends ApiController
 {
 

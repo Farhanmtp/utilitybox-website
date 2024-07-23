@@ -3,13 +3,21 @@
 namespace App\Models;
 
 use App\Observers\SettingObserver;
+use App\Traits\UtilsTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    use HasFactory;
+    use UtilsTrait;
+
+    protected $fillable = [
+        'key',
+        'name',
+        'values',
+        'stats',
+        'order',
+    ];
 
     public $timestamps = false;
 
@@ -22,7 +30,6 @@ class Setting extends Model
         'status' => 'boolean',
         'order' => 'integer',
     ];
-
 
     protected static function boot()
     {
@@ -51,7 +58,6 @@ class Setting extends Model
             }
         );
     }
-
 
     /**
      * @return false|string

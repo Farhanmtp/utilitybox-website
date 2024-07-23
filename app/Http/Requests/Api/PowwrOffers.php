@@ -15,8 +15,7 @@ class PowwrOffers extends Request
         $rules = [
             'utilityType' => ['required', 'in:gas,electric'],
             'meterNumber' => ['required', 'string'],
-            'currentSupplierName' => ['nullable', 'string'],
-            'curentSupplierName' => ['nullable', 'string'],
+            'currentSupplier' => ['required', 'string'],
 
             'contractRenewalDate' => ['nullable', 'date'],
             'contractEndDate' => ['nullable', 'date'],
@@ -35,7 +34,7 @@ class PowwrOffers extends Request
         return [
             'utilityType.required' => "Utility type is required",
             'meterNumber.required' => "Meter number is required",
-            'currentSupplierName.required' => "Current supplier is required",
+            'currentSupplier.required' => "Current supplier is required",
         ];
     }
 }

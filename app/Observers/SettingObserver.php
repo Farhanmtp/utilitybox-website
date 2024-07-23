@@ -70,11 +70,6 @@ class SettingObserver
             if ($key == 'app') {
                 $app_mapping = [
                     'APP_NAME' => 'name',
-                    'MAIL_HOST' => 'host',
-                    'MAIL_PORT' => 'port',
-                    'MAIL_USERNAME' => 'username',
-                    'MAIL_ENCRYPTION' => 'encryption',
-                    'MAIL_FROM_ADDRESS' => 'from_email',
                 ];
                 foreach ($app_mapping as $env => $key) {
                     $new_val = data_get($new_value, $key);

@@ -47,7 +47,7 @@
 		// Browser
 		factory( jQuery, window, document );
 	}
-}(function( $, window, document, undefined ) {
+}(function( $, window, document ) {
 'use strict';
 var DataTable = $.fn.dataTable;
 
@@ -66,6 +66,7 @@ $.extend(true, DataTable.Criteria.classes, {
     "delete": 'btn btn-light dtsb-delete',
     left: 'btn btn-light dtsb-left',
     right: 'btn btn-light dtsb-right',
+    search: 'btn btn-light dtsb-search',
     value: 'form-control dtsb-value'
 });
 

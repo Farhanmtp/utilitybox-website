@@ -100,9 +100,37 @@ $(function () {
     }
     var selected = [];
 
+    function updateSelected(id, add) {
+        if (!$("#ids").length) {
+            $('table.dataTable').after('<input type="hidden" name="entryIds" id="ids">');
+        }
+        if (id === 'clear') {
+            selected = [];
+            $("#scount").text(0);
+            $("#ids").val('')
+        } else {
+            var id = id.replace('dt_', '');
+            var index = $.inArray(id, selected);
+
+            if (add && index === -1) {
+                selected.push(id);
+            }
+
+            if (!add && index > -1) {
+                selected.splice(index, 1);
+            }
+
+            $("#scount").text("Selected items: " + selected.length);
+            $("#ids").val(selected.join(','));
+        }
+    }
+
     $.extend(true, $.fn.dataTable.defaults, {
+        buttons: [],
         responsive: {
-            'details': {
+            details: {
+                type: 'column',
+                target: -1,
                 renderer: function (api, rowIdx, columns) {
                     var data = $.map(columns, function (col, i) {
                         return col.hidden ?
@@ -112,34 +140,26 @@ $(function () {
                             '</tr>' :
                             '';
                     }).join('');
-                    return data ? $('<table class="table table-sm" />').append(data) : false;
+                    return data ? $('<table class="table p-0 table-sm" />').append(data) : false;
                 }
             }
         },
-        "serverParams": function (aoData) {
-            var filters = $("#filters .form-control:not(.no-filter)");
-            if (filters.length) {
-                filters.each(function (i) {
-                    var val = $(this).val();
-                    var _name = $(this).attr('data-column') || $(this).attr('name');
-                    aoData[_name] = val;
-                });
-            }
-        },
         pageLength: '25',
-        searchDelay: 1000,
+        searchDelay: 500,
         order: [[0, 'desc']],
         deferRender: true,
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search Record"
         },
-        dom: "r<'row datatables_buttons'<'col-lg-12'>>" +
-            "<'row datatables_top'<'col-sm-6'l><'col-sm-6'f>>" +
-            "<'row'<'col-sm-12' t>>" +
-            "<'row datatables_bottom'<'col-md-5'i><'col-md-7'p>>",
+        dom: "r<'row datatables_buttons'<'col-lg-12 text-right'B>>" +
+            "<'row justify-content-between datatables_top mb-2'<'col-md-auto mr-auto'l><'col-md-auto ml-auto'f>>" +
+            "<'row justify-content-md-center'<'col-sm-12't>>" +
+            "<'row justify-content-between datatables_bottom'<'col-md-auto mr-auto'i><'col-md-auto ml-auto'p>>",
         columnDefs: [
-            {targets: -1, responsivePriority: 1, orderable: false, searchable: false, className: "text-center nowrap"},
+            {target: -1, className: 'dtr-control', orderable: false},
+            {targets: [0, 1], responsivePriority: 1},
+            {targets: [-1, -2], responsivePriority: 2, orderable: false, searchable: false, className: "text-center nowrap"},
             {targets: 'status', className: "text-center"},
             {targets: 'text-center', className: "text-center"},
             {targets: 'text-right', className: "text-right"},
@@ -147,7 +167,7 @@ $(function () {
             {targets: 'no-sort', orderable: false},
             {targets: 'no-search', searchable: false},
         ],
-        /*rowCallback: function (row, data, displayIndex, displayIndexFull) {
+        rowCallback: function (row, data, displayIndex, displayIndexFull) {
             var checkbox = $(row).find('.dt-checkboxes');
             if (checkbox.length) {
                 var id = data.DT_RowId.toString().replace('dt_', '');
@@ -159,14 +179,23 @@ $(function () {
                     updateSelected($(this).val(), checked);
                 });
             }
-        },*/
+        },
         initComplete: function (settings, json) {
-            var _api = this.api();
-            $("#filters").find('.form-control:not(.no-filter)').each(function (i) {
-                $(this).on('change', function () {
-                    _api.draw();
+            var filters = $("#filters .form-control:not(.no-filter)");
+            if (filters.length) {
+                var _api = this.api();
+                filters.each(function (i) {
+                    $(this).on('change', function () {
+                        _api.draw();
+                    });
                 });
-            });
+                _api.on('preXhr.dt', function (e, settings, data) {
+                    filters.each(function (i) {
+                        var _name = $(this).attr('data-column') || $(this).attr('name');
+                        data[_name] = $(this).val();
+                    });
+                })
+            }
         },
     });
 
@@ -190,19 +219,22 @@ $(function () {
         });
     });
 
-    /*$(document).on('preXhr.dt', function (e, settings, data) {
-        $("#filters").find('.form-control').each(function (i) {
-            var _name = $(this).attr('data-column') || $(this).attr('name');
-            data[_name] = $(this).val()
+    $('body').on('change', '#massSelectAll', function () {
+        var rows, checked;
+        rows = $(this).closest('table').find('tbody tr');
+        checked = $(this).prop('checked');
+        $.each(rows, function () {
+            var checkbox = $($(this).find('td').eq(0)).find('input');
+            checkbox.prop('checked', checked);
+            updateSelected(checkbox.val(), checked);
         });
-        console.log(data);
-    });*/
+    });
 
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
 
-    $("a.disable").on('click', function (e) {
+    $(".disable").on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
     });
@@ -214,6 +246,63 @@ $(document).ready(function (e) {
         $('.modal .modal-loader').css('opacity', '1').fadeOut();
         $('.loader').css('opacity', '1').fadeOut();
     });
+
+    $.fn.passGenerator = function () {
+        var field = $(this);
+        var confirmField = field.attr('data-confirm-field') || 'confirm_password';
+
+        field.wrap('<div class="input-group"/>');
+        var html = $('<div class="input-group-append">' +
+            '<button class="btn btn-default btn-generate" type="button">Generate</button>' +
+            '<div class="password-generator card panel" style="display:none;width:250px;padding:0;position:absolute;top:99%;right:0;z-index:99999"><div class="card-body panel-body">' +
+            '<div class="close" style="position: absolute;top: 1px;right: 2px;font-size: 1em;"><i class="fa fa-times-circle"></i></div>' +
+            '<div class="form-group"><div class="input-group input-group-sm">' +
+            '<input class="form-control temp-pass"/>' +
+            '<div class="input-group-append">' +
+            '<button type="button" class="btn btn-default refresh"><i class=" fa fa-refresh"></i></button>' +
+            '</div></div>' +
+            '</div>' +
+            '<div class="text-right">' +
+            '<input type="button" class="btn btn-primary btn-block btn-sm use-password" value="Use Password">' +
+            '</div></div></div>');
+        field.after(html);
+
+        var randomPassword = function (length) {
+            var chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            var pass = "";
+            for (var x = 0; x < length; x++) {
+                var i = Math.floor(Math.random() * chars.length);
+                pass += chars.charAt(i);
+            }
+            return pass;
+        };
+
+        var wrap = field.closest('.input-group');
+        var popup = wrap.find('.password-generator');
+        var temp_pass = wrap.find('.temp-pass');
+        wrap.find(".btn-generate").on('click', function () {
+            if (temp_pass.val() == '') {
+                temp_pass.val(randomPassword(15));
+            }
+            popup.toggle();
+        });
+        wrap.find('.refresh').on('click', function () {
+            temp_pass.val(randomPassword(15));
+        });
+        wrap.find('.use-password').on('click', function () {
+            var _pass = temp_pass.val();
+            field.val(_pass);
+            if ($('#' + confirmField).length) {
+                $('#' + confirmField).val(_pass);
+            }
+            popup.hide();
+        });
+        popup.find(".close").on('click', function () {
+            popup.hide();
+        });
+    };
+
+    $("#password").passGenerator();
 
     if (jQuery.validator) {
         var script = $('<script type="text/javascript" src="' + baseUrl + '/assets/plugins/jquery-validation/additional-methods.min.js">');
@@ -516,7 +605,7 @@ function saveAjaxRequest(adminUrl, el) {
             if (data.fieldValue == 1) {
                 label.attr('class', 'badge badge-success').text('Active');
             } else {
-                label.attr('class', 'badge badge-danger').text('Disabled');
+                label.attr('class', 'badge badge-danger').text('InActive');
             }
         }
 

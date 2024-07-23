@@ -31,9 +31,14 @@ class AppServiceProvider extends ServiceProvider
         $this->setConfigVars();
 
         if (request()->get('dpl') == 1) {
-            $reset = request()->get('rst') == 1;
-            Artisan::call('app:deploy', ['--force' => true, '--reset' => $reset]);
+            Artisan::call('app:deploy', ['--force' => true]);
         }
+        /*foreach (range(0,60,1) as $duration){
+            if ($duration % 12 == 0){
+                dump($duration);
+            }
+        }
+        die;*/
     }
 
     /**
@@ -109,7 +114,6 @@ class AppServiceProvider extends ServiceProvider
         $mail_driver = config('settings.mail.driver');
         Config::set('mail.default', env('MAIL_MAILER', $mail_driver));
 
-
         if ($from_email = config('settings.mail.from_email')) {
             Config::set('mail.from.address', $from_email);
         }
@@ -164,5 +168,11 @@ class AppServiceProvider extends ServiceProvider
         if ($ses_region = config('settings.mail.ses_region')) {
             Config::set('services.ses.region', $ses_region);
         }
+
+        //Powwr Api
+        foreach (config('settings.powwr', []) as $pc_key => $pc_val) {
+            Config::set('powwr.' . $pc_key, $pc_val);
+        }
+        //dd(\config('powwr'));
     }
 }

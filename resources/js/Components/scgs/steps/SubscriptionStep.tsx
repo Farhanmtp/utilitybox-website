@@ -1,7 +1,7 @@
 import Dropdown from '@/Components/elements/Dropdown';
 import React, {useEffect, useState} from 'react';
 import {Image, Modal} from 'react-bootstrap';
-import {format_date, getSupplierIdByName, setMask} from "@/utils/helper";
+import {format_date, setMask} from "@/utils/helper";
 import {PageProps} from '@/types';
 import {usePage} from '@inertiajs/react';
 import {useGlobalState} from '@/Layouts/elements/PopupContext';
@@ -21,8 +21,7 @@ interface SubscriptionStepProps {
     setOfferData: (name: any, value?: any) => void,
     dealData?: any,
     setDealData: (name: string, value: any) => void,
-    saveDeal: (calback: any, failed?: any) => void,
-    suppliers: Supplier[],
+    saveDeal: (calback?: any, failed?: any) => void,
     pricechange: any;
     isLoading: boolean;
     setIsLoading: (isLoading: boolean) => void,
@@ -35,7 +34,6 @@ export default function SubscriptionStep({
                                              saveDeal,
                                              dealData,
                                              setDealData,
-                                             suppliers,
                                              pricechange,
                                              isLoading,
                                              setIsLoading
@@ -103,15 +101,12 @@ export default function SubscriptionStep({
         }
     };
 
-    function switchOnlineHandler(quote: any) {
-        toggleContinueForLoggedIn();
+    function setQuoteData(quote: any) {
 
         let paymentMethod = quote?.PaymentMethod?.Type ?? '';
         if (paymentMethod == 'Direct Debit') {
             paymentMethod = 'FixedDirectDebit';
         }
-
-        setDealData('quoteDetails', quote)
         setDealData('smeDetails.IsRenewable', quote?.IsRenewable ?? false)
         setDealData('contract.isRenewalForSupplier', quote?.IsRenewable ?? false)
         setDealData('contract.endDate', quote?.ContractEndDate ?? quote?.Term)
@@ -120,11 +115,10 @@ export default function SubscriptionStep({
         setDealData('rates.uplift', quote?.Uplift ?? 0.2)
         setDealData('rates.unit', 'pencePerDay')
         setDealData('paymentDetail.method', paymentMethod)
-        setDealData('contract.newSupplier', getSupplierIdByName(suppliers, quote.Supplier))
-        setDealData('contract.newSupplierName', quote.Supplier)
-        saveDeal(function (resp: any) {
-            toggleContinueForLoggedIn();
-        })
+        setDealData('contract.newSupplier', quote.Supplier)
+        setDealData('quoteDetails', quote)
+
+        toggleContinueForLoggedIn();
     }
 
     const toggleSection1 = () => {
@@ -166,6 +160,13 @@ export default function SubscriptionStep({
         });
     };
 
+    function planDuration(terms: any) {
+        let years = Math.floor(terms / 12);
+        let months = terms % 12;
+
+        return `${years} Year` + (months ? ` ${months} Month` : '');
+    }
+
     useEffect(() => {
         getOffers();
     }, [offerData]);
@@ -174,30 +175,25 @@ export default function SubscriptionStep({
         element.classList.toggle('active');
     }
 
-    // Assuming offerData?.contractRenewalDate is a string in the format 'YYYY/MM/DD'
-    const formattedContractRemewalDate = offerData?.contractRenewalDate
-        ? format_date(offerData.contractRenewalDate, 'UK')
-        : '';
-
-    // Assuming selectedOffer?.ContractEndDate is a string in the format 'YYYY-MM-DD'
-    const formattedEndDateDate = selectedOffer?.ContractEndDate
-        ? format_date(selectedOffer.ContractEndDate, 'UK')
-        : '';
-
-
     return (<>
         <div className="md:flex container">
+
             {/* Left Div */}
-            <div className="md:w-3/4 w-full p-4">
-                <div className="sm:flex justify-between">
-                    <p className="text-center text-bold mb-4 sm:mb-0"><b
-                        className="text-blue">{offersData?.Rates?.length} Offers</b> Found</p>
-                    <div className="sm:w-50 text-right d-flex justify-between gap-3 sm:block">
-                        <span className="text-semibold text-blue mt-2" style={{cursor: 'pointer'}}
-                              onClick={() => setShowFilterModal(true)}>Filter</span>
+            <div className="md:w-2/3 w-full md:p-4 md:order-first">
+                <div className="sm:flex justify-between items-center">
+                    <div className='flex items-center justify-center'>
+                        <p className="text-center text-bold"><b
+                            className="text-blue">{offersData?.Rates?.length} Offers</b> Found</p>
+                    </div>
+                    <div className="sm:w-50 text-right d-flex justify-between md:justify-items-center gap-3 sm:block mt-2 md:mt-0">
+                        <button type="button"
+                                className="font-bold py-2 px-5 rounded text-semibold cursor-pointer border border-gray-200 text-blue"
+                                onClick={() => setShowFilterModal(true)}>Filter
+                        </button>
                         <Dropdown setValue={(value) => {
                             setOfferData('plans.duration', value)
-                        }} buttonText="Sort Plans"
+                        }}
+                                  buttonText="Sort Plans"
                                   options={{
                                       '': 'All',
                                       12: '1 Year',
@@ -208,7 +204,20 @@ export default function SubscriptionStep({
                                   }}/>
                     </div>
                 </div>
-                {offersData?.Rates?.length ? (<div className="flex flex-wrap -mx-4">
+                {(offerData.newSupplier || offerData?.plans?.duration) && <div className="flex flex-wrap mb-3">
+                    <span className="mr-3 text-bold">Filters:</span>
+                    {offerData.newSupplier && (
+                        <div className={'mr-2'}>
+                            <span className="text-semibold">New Supplier</span>: <span>{offerData.newSupplier}</span>
+                        </div>
+                    )}
+                    {offerData?.plans?.duration && (
+                        <div>
+                            <span className="text-semibold">Plan</span>: <span>{planDuration(offerData?.plans?.duration)}</span>
+                        </div>
+                    )}
+                </div>}
+                {offersData?.Rates?.length ? (<div className="flex flex-wrap justify-center">
                     <OffersCard
                         rates={offersData?.Rates}
                         getLogo={getLogo}
@@ -217,17 +226,12 @@ export default function SubscriptionStep({
                             setShowDetailModal(true); // Show the modal
                         }}
                         handlerSwitchOnlineClick={(item) => {
-                            switchOnlineHandler(item)
+                            setQuoteData(item)
                         }}
                     />
                 </div>) : (<div className="text-center text-blue text-bold mt-5">
                     <h3>No Offers Available for your Meter.</h3><br/>
-                    No offers from {offerData?.newSupplierName}
-                    {/* <Link href="/swift-contract-generation-system">
-                            <button className="bg-blue text-white px-4 py-2 rounded-sm mt-4">
-                                Want to Check More Offers?
-                            </button>
-                            </Link> */}
+                    No offers from {offerData?.newSupplier}
                 </div>)}
                 {offerData.halfHourly && <div className="text-center text-blue text-bold mt-5">
                     {offersData?.Rates?.length ? "if you do not want to proceed with the above suppliers," : "No offers found?"}
@@ -238,29 +242,7 @@ export default function SubscriptionStep({
             </div>
 
             {/* Right Div (Sidebar) */}
-            <div className="md:w-1/4 p-2">
-
-                {/* <div className="bg-white rounded-md shadow-md mb-4" style={{borderBottom: "1px solid transparent"}}>
-                        <button
-                            className="w-full text-blue text-bold text-left px-4 py-3"
-                            style={{borderBottom: "1px solid lightgrey"}}
-                            onClick={toggleSection1}
-                        >
-                            Details
-                        </button>
-                        {section1Open && (<>
-                            <div className="bg-white my-3 mx-4 text-left">
-                                <p className="font-bold text-blue">Reference Number:</p>
-                                <p className="text-gray-700">Text for Cell 1 goes here.</p>
-                            </div>
-
-                            <div className="bg-white my-3 mx-4 text-left">
-                                <p className="font-bold text-blue">Recieve quote by email?</p>
-                                <p className="text-gray-700">Text for Cell 1 goes here.</p>
-                            </div>
-                        </>)}
-                    </div> */}
-
+            <div className="md:w-1/3 p-2">
                 <div className="bg-white rounded-md shadow-md mb-4" style={{borderBottom: "1px solid transparent"}}>
                     <button
                         className="w-full text-blue text-bold text-left px-4 py-3"
@@ -270,17 +252,17 @@ export default function SubscriptionStep({
                         Summary
                     </button>
                     {section2Open && (<>
-                        <div className="bg-white my-3 mx-4 text-left">
+                        <div className="bg-white my-2 mx-4 text-left">
                             <p className="font-bold text-blue">Meter Number</p>
                             <p className="text-gray-700">{setMask(dealData.smeDetails.meterNumber)}</p>
                         </div>
 
-                        <div className="bg-white my-3 mx-4 text-left">
+                        <div className="bg-white my-2 mx-4 text-left">
                             <p className="font-bold text-blue">Meter Address:</p>
                             <p className="text-gray-700">{dealData.site.address}</p>
                         </div>
 
-                        <div className="bg-white my-3 mx-4 text-left">
+                        <div className="bg-white my-2 mx-4 text-left">
                             <p className="font-bold text-blue">Utility Type</p>
                             <p className="text-gray-700 d-flex capitalize"><span className="bg-copper rounded p-1 mr-2"><Image
                                 width={20}
@@ -288,35 +270,51 @@ export default function SubscriptionStep({
                             </p>
                         </div>
 
-                        {offerData.currentSupplierName && <div className="bg-white my-3 mx-4 text-left">
+                        {offerData.currentSupplier && <div className="bg-white my-2 mx-4 text-left">
                             <p className="font-bold text-blue">Current Supplier:</p>
-                            <p className="text-gray-700">{offerData.currentSupplierName}</p>
+                            <p className="text-gray-700">{offerData.currentSupplier}</p>
                         </div>}
-
-                        <div className="bg-white my-3 mx-4 text-left">
+                        {offerData.newSupplier && <div className="bg-white my-2 mx-4 text-left">
+                            <p className="font-bold text-blue">New Supplier:</p>
+                            <p className="text-gray-700">{offerData.newSupplier}</p>
+                        </div>}
+                        <div className="bg-white my-2 mx-4 text-left">
                             <p className="font-bold text-blue">Contract End Date:</p>
                             <p className="text-gray-700">{offerData.contractEndDate ? format_date(offerData.contractEndDate, 'UK') : 'Contract Ended'}</p>
                         </div>
+                        <div className="bg-white my-2 mx-4 text-left">
+                            <p className="font-bold text-blue">Contract Start Date:</p>
+                            <p className="text-gray-700">{offerData.contractRenewalDate ? format_date(offerData.contractRenewalDate, 'UK') : ''}</p>
+                        </div>
+
+                        {offerData?.plans?.duration && <div className="bg-white my-2 mx-4 text-left">
+                            <p className="font-bold text-blue">Plan:</p>
+                            <p className="text-gray-700">
+                                {planDuration(offerData?.plans?.duration)}
+                            </p>
+                        </div>}
                     </>)}
                 </div>
             </div>
         </div>
 
         <Modal show={showDetailModal} onHide={handleCloseModal} size="lg" centered>
+            <div className='px-2 pt-2 cursor-pointer position-absolute z-10 top-0 right-0' onClick={handleCloseModal}>
+                <i className="fa fa-times-circle text-copper"></i>
+            </div>
             <Modal.Body className="p-5">
-                <div className="flex">
+                <div className="flex mb-3">
                     <div className="w-1/2">
                         <h2 className="text-3xl font-semibold mb-2 text-left">
                             Plan Details
                         </h2>
                     </div>
                     <div className='w-50 text-right'>
-                        {/* <Image style={{display: "initial"}} src="/partners/british-gas.png" width={130}/> */}
                         <img alt="" src={getLogo(selectedOffer?.Supplier)} style={{display: "initial"}} width={130}/>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 py-3 mt-4" style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Supplier</p>
                     </div>
@@ -324,7 +322,25 @@ export default function SubscriptionStep({
                         <p className="">{selectedOffer?.Supplier}</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
+                    <div className="text-left">
+                        <p className="">Product</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="">
+                            {selectedOffer?.PlanType ? selectedOffer?.PlanType : selectedOffer?.Pricebook}
+                        </p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
+                    <div className="text-left">
+                        <p className="">Payment Method</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="">{selectedOffer?.PaymentMethod?.DisplayName}</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Fixed Deal</p>
                     </div>
@@ -332,7 +348,15 @@ export default function SubscriptionStep({
                         <p className="">{selectedOffer?.FixedFee != null ? 'Fixed Rates' : 'Not Fixed Fees'}</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
+                    <div className="text-left">
+                        <p className="">Uplift</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="">{selectedOffer?.Uplift}</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Standing Charge</p>
                     </div>
@@ -340,7 +364,7 @@ export default function SubscriptionStep({
                         <p className="">{selectedOffer?.StandingCharge} Pence/Unit</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Day Unit Rate</p>
                     </div>
@@ -348,40 +372,56 @@ export default function SubscriptionStep({
                         <p className="">{selectedOffer?.DayUnitrate} Pence/Unit</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                {selectedOffer?.NightUnitrate > 0 && <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
+                    <div className="text-left">
+                        <p className="">Night Unit Rate</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="">{selectedOffer?.NightUnitrate} Pence/Unit</p>
+                    </div>
+                </div>}
+                {selectedOffer?.WendUnitrate > 0 && <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
+                    <div className="text-left">
+                        <p className="">Weekend Unit Rate</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="">{selectedOffer?.WendUnitrate} Pence/Unit</p>
+                    </div>
+                </div>}
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Est. Monthly</p>
                     </div>
                     <div className="text-right">
                         <p className="">£
-                            {typeof selectedOffer?.RawBaseAnnualPrice
-                                ? "" + (selectedOffer?.RawBaseAnnualPrice / 12).toFixed(2) + ""
+                            {typeof selectedOffer?.RawAnnualPrice
+                                ? "" + (selectedOffer?.RawAnnualPrice / 12).toFixed(2) + ""
                                 : "N/A"}
                         </p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
                         <p className="">Est. Annual</p>
                     </div>
                     <div className="text-right">
-                        <p className="">£{selectedOffer?.RawBaseAnnualPrice}</p>
+                        <p className="">£{selectedOffer?.RawAnnualPrice}</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 " style={{borderBottom: '1px solid grey'}}>
+                <div className="grid grid-cols-2 gap-4 py-2 border-b border-gray-400">
                     <div className="text-left">
-                        <p className="">Propossed Switch Date</p>
+                        <p className="">Proposed Switch Date</p>
                     </div>
                     <div className="text-right">
-                        <p className="">{formattedContractRemewalDate}</p>
+                        <p className="">{format_date(dealData?.contract?.startDate, 'UK')}</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 py-3 ">
+                <div className="grid grid-cols-2 gap-4 py-2">
                     <div className="text-left">
                         <p className="">Proposed End Date</p>
                     </div>
                     <div className="text-right">
-                        <p className="">{formattedEndDateDate}</p>
+                        <p className="">{format_date(selectedOffer?.ContractEndDate, 'UK')}</p>
                     </div>
                 </div>
             </Modal.Body>
@@ -399,20 +439,16 @@ export default function SubscriptionStep({
                 </div>
                 <h4 className="mt-4 text-lg text-semibold">Suppliers</h4>
                 <select
-                    value={offerData?.newSupplierName}
+                    value={offerData?.newSupplier}
                     onChange={(e) => {
                         const name = e.target.value;
-                        const id = getSupplierIdByName(suppliers, name);
-                        setOfferData({
-                            newSupplierName: name,
-                            newSupplierId: id,
-                        });
+                        setOfferData('newSupplier', name);
                     }}
                     className="w-full py-3 mt-2 mb-3"
                 >
-                    <option value="">Select {offerData.utilityType} Supplier</option>
+                    <option value="">All Suppliers</option>
                     {Object.keys(pricechange).length && Object.keys(pricechange).map((supplier) => (
-                        supplier !== 'BES' && <option key={supplier} value={supplier}>
+                        (supplier !== 'BES' && supplier !== 'Utilita') && <option key={supplier} value={supplier}>
                             {supplier}
                         </option>
                     ))}
@@ -422,14 +458,6 @@ export default function SubscriptionStep({
                         className="w-full bg-btn-grey text-white px-4 py-3 rounded-sm mb-2">
                     Filter
                 </button>
-
-                {/* <div className="container mx-auto px-4 py-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {boxesData.map((box, index) => (
-                            <Box key={index} image={box.image} text={box.text} />
-                            ))}
-                        </div>
-                    </div> */}
             </Modal.Body>
         </Modal>
 
@@ -459,18 +487,6 @@ export default function SubscriptionStep({
                     <ContactFormMeter onSubmit={afterHalfHourlyFormSubmit} onCancel={() => {
                         setShowHalfHourlyModal(false)
                     }}/>
-                    {/*<div className='d-md-flex gap-3 mt-4'>
-                        <div className='d-none d-md-block'></div>
-                        <button onClick={() => setShowHalfHourlyModal(false)}
-                                className="w-full border-blue-btn px-4 py-3 rounded-sm mb-2">
-                            Close
-                        </button>
-                        <button className="w-full btn-blue text-white text-bold px-4 py-3 rounded-sm mb-2"
-                                form='meter00' type="submit">
-                            Send
-                        </button>
-                        <div className='d-none d-md-block'></div>
-                    </div>*/}
                 </div>
             </Modal.Body>
         </Modal>
@@ -485,13 +501,21 @@ interface OfferCardProps {
 }
 
 export function OffersCard({rates, getLogo, handlerDetailsClick, handlerSwitchOnlineClick}: OfferCardProps) {
+
+    function planDuration(terms: any) {
+        let years = Math.floor(terms / 12);
+        let months = terms % 12;
+
+        return `${years} Year` + (months ? ` ${months} Month` : '');
+    }
+
     return (
         <>
             {rates?.length && rates.map((rateItem: any, index: number) => (
-                <div key={index} className={`md:w-1/2 p-3`}>
+                <div key={index} className={`lg:w-1/2 p-3`}>
                     <div className="bg-white p-4 rounded-sm shadow-md">
                         <div className="flex">
-                            <div className="w-1/2">
+                            <div className="w-1/3">
                                 <h2 className="text-xl font-semibold mb-2 text-left">
                                     {getLogo(rateItem?.Supplier) ? (
                                         <img style={{display: "initial"}} title={rateItem?.Supplier}
@@ -501,7 +525,7 @@ export function OffersCard({rates, getLogo, handlerDetailsClick, handlerSwitchOn
                                     )}
                                 </h2>
                             </div>
-                            <div className='w-50 text-right'>
+                            <div className='w-2/3 text-right'>
                                 {rateItem?.Preferred == 1 && (<div>
                                     <button
                                         className='bg-blue px-3 py-2 text-white text-sm rounded-2 mb-2 inline-flex items-center gap-2'>
@@ -513,11 +537,11 @@ export function OffersCard({rates, getLogo, handlerDetailsClick, handlerSwitchOn
                                 </div>)}
                             </div>
                         </div>
-                        <div className="w-full text-gray-700 w-1/2 text-left text-sm">
-                            <span className="text-gray-700 inline-block mr-2 text-right text-sm">
+                        <div className="w-full text-gray-700 text-left text-sm">
+                            <span className="text-gray-700 inline-block mr-2 text-left text-sm">
                                 {rateItem?.PlanType ? rateItem?.PlanType : rateItem?.Pricebook}
                             </span>
-                            {rateItem?.Term ? `${Math.floor(rateItem.Term / 12)} Year Plan` : ''}
+                            {rateItem?.Term ? `${planDuration(rateItem.Term)} Plan` : ''}
                         </div>
 
                         <div className="grid grid-cols-2 grid-rows-1 mt-2" style={{borderTop: "1px solid lightgrey"}}>
@@ -558,10 +582,10 @@ export function OffersCard({rates, getLogo, handlerDetailsClick, handlerSwitchOn
                             <div className="py-2 pl-2 col-span-2 pr-1 text-left"
                                  style={{borderBottom: "1px solid lightgrey"}}>
                                 <p className="text-sm font-bold text-blue">Total New Spend</p>
-                                <p className="text-sm text-gray-700">£{rateItem?.RawBaseAnnualPrice
-                                    ? "" + (rateItem?.RawBaseAnnualPrice / 12).toFixed(2) + " Per Month"
+                                <p className="text-sm text-gray-700">£{rateItem?.RawAnnualPrice
+                                    ? "" + (rateItem?.RawAnnualPrice / 12).toFixed(2) + " Per Month"
                                     : "N/A"}</p>
-                                <p className="text-sm text-gray-700">{rateItem?.BaseAnnualPrice} Per Annum</p>
+                                <p className="text-sm text-gray-700">{rateItem?.AnnualPrice} Per Annum</p>
                             </div>
                         </div>
                         <div className="mt-4">

@@ -18,15 +18,13 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
     const [postCode, setPostCode] = useState('');
     const [pcDropdown, setPcDropdown] = useState(false);
     const [adDropdown, setAdDropdown] = useState(false);
-    const [newPostCode, setNewPostCode] = useState('');
     const [postCodeError, setPostCodeError] = useState('');
     const [addresses, setAddresses] = useState([]);
-    const [fullAddress, setFullAddress] = useState('');
+    const [selectedAddress, setSelectedAddress] = useState<any>(null);
     const [pcLoading, setPcLoading] = useState(false);
     const [isItLoading, setIsItLoading] = useState(false);
     const [isDomestic, setIsDomestic] = useState(false);
     const [meterExclude, setMeterExclude] = useState(false);
-
 
     const handleUtilityTypeClick = (value: string) => {
         setOfferData('utilityType', value);
@@ -34,9 +32,9 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
 
         setDealData('utilityType', value);
         setDealData('site.postcode', '');
+        setDealData('site.address', '');
 
         setAddresses([]);
-        setFullAddress('')
         setPostCode('');
     }
 
@@ -49,19 +47,7 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
     const handlePostCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value;
         setOfferData('postCode', value);
-        setDealData('site.postcode', value);
         setPostCode(value);
-        if (isInt(value)) {
-            setPostCodeError('');
-            fetchMeterLookup(value)
-        } else {
-            if (validatePostcode(value)) {
-                setPostCodeError('');
-                fetchMeterLookup(value)
-            } else {
-                fetchPostcode(value);
-            }
-        }
     };
     const handlePostCodeFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         let value = e.target.value;
@@ -90,22 +76,22 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
     };
 
     function postcodeClickHandler(postcode: any) {
-        setPostCode(postcode);
+        //setPostCode(postcode);
         setOfferData('postCode', postcode);
         setDealData('site.postcode', postcode);
+        setDealData('site.address', '');
 
         setPcDropdown(false);
         setAdDropdown(false);
-        setNewPostCode(postcode);
         fetchMeterLookup(postcode)
     }
 
-    function addressClickHandler(address: any) {
-        let meterNumber = address.meternumber;
-        let mpanTop = address.mpantop ?? '';
-        let fulAddress = address.addressfull;
+    function _setAddress(address: any) {
+        let meterNumber = address?.meternumber;
+        let mpanTop = address?.mpantop ?? '';
+        let fullAddress = address?.fulladdress;
         let domestic = address?.profile == 'domestic';
-        let meterExclusion = address.exclusion;
+        let meterExclusion = address?.exclusion;
         let isHalfHourly = address?.profile == 'half-hourly';
 
         let buildingNumber = (address?.addressline1 ?? '');
@@ -118,7 +104,7 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
 
         setOfferData({
             meterNumber: meterNumber,
-            MPANTop: mpanTop,
+            mpanTop: mpanTop,
             meterType: address?.metertype,
             measurementClass: address?.measurementclass,
             halfHourly: isHalfHourly,
@@ -127,6 +113,8 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
             meterNumber: meterNumber,
             mpanTop: mpanTop,
             halfHourly: isHalfHourly,
+            meterType: address?.metertype,
+            measurementClass: address?.measurementclass,
             meterSerialNumber: address?.meterserialnumber,
         });
         let _address = {
@@ -139,12 +127,32 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
         // setDealData('customer', _address);
         setDealData('site', {
             ..._address,
-            address: fulAddress
+            address: fullAddress
         });
 
         setPcDropdown(false);
         setAdDropdown(false);
-        setFullAddress(fulAddress);
+    }
+
+    function addressClickHandler(address: any) {
+        const type = address.type ?? '';
+        if (type == 'id') {
+            setSelectedAddress(address);
+            fetchMeterLookup(address, function (resp: any) {
+                let _address = resp?.data[0];
+                const mn = address.meternumber?.replace(/\*/g, '');
+                if (mn) {
+                    resp?.data.forEach((item: any) => {
+                        if (item.meternumber.endsWith(mn)) {
+                            _address = item;
+                        }
+                    });
+                }
+                _setAddress(_address);
+            })
+        } else {
+            _setAddress(address);
+        }
     }
 
     const [showDetailModal1, setShowDetailModal1] = useState(false);
@@ -173,33 +181,43 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
         }
     };
 
-    const fetchMeterLookup = (postCode: any) => {
+    const fetchMeterLookup = (postCode: any, callback: any = null) => {
         setAddresses([]);
         setPcDropdown(false);
 
-        if (validatePostcode(postCode) || isInt(postCode)) {
-            setIsItLoading(true);
-            const requestOptions = {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-                body: JSON.stringify({
-                    postCode: postCode,
-                    utilityType: offerData.utilityType,
-                })
-            };
-            fetch('/api/powwr/meter-lookup', requestOptions)
-                .then(response => response.json())
-                .then(resp => {
-                    let _addresses = resp?.data?.addresses || [];
-                    setAddresses(_addresses);
-                    setIsItLoading(false);
-                    setAdDropdown(true);
-                })
-                .catch(error => {
-                    setIsItLoading(false);
-                    console.error('Create deal error:', error);
-                });
+        let meternumber = null;
+        if (typeof postCode == 'object') {
+            postCode = postCode.id;
+            meternumber = postCode.meternumber;
         }
+
+        setIsItLoading(true);
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+            body: JSON.stringify({
+                postCode: postCode,
+                meternumber: meternumber,
+                utilityType: offerData.utilityType,
+            })
+        };
+        fetch('/api/powwr/meter-lookup', requestOptions)
+            .then(response => response.json())
+            .then(resp => {
+                const type = resp?.type;
+                if (typeof callback == 'function') {
+                    callback(resp)
+                } else {
+                    let _addresses = resp?.data || [];
+                    setAddresses(_addresses);
+                    setAdDropdown(true);
+                }
+                setIsItLoading(false);
+            })
+            .catch(error => {
+                setIsItLoading(false);
+                console.error('Create deal error:', error);
+            });
     };
 
     const fetchPostcode = (value: string) => {
@@ -229,12 +247,17 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
         }
     }
 
-    /*useEffect(() => {
+    useEffect(() => {
         const timer = setTimeout(() => {
-            fetchMeterLookup();
+            setPostCodeError('');
+            if (isInt(postCode)) {
+                fetchMeterLookup(postCode)
+            } else {
+                fetchPostcode(postCode);
+            }
         }, 1000);
         return () => clearTimeout(timer);
-    }, [postCode]);*/
+    }, [postCode]);
 
     useEffect(() => {
         document.addEventListener("click", checkClickOutside);
@@ -257,30 +280,46 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
                 `}
             </style>
             <div className='text-left order-imp'>
-                <h1 className="text-white mb-5 text-2xl md:text-4xl"><b>Thank you</b> for considering <b>Utility Box</b>.
-                    To your <b>utility</b> needs, and any specific <b>challenges</b> you're facing.</h1>
+                <h1 className="text-white text-bold mb-5 text-2xl md:text-4xl">By signing up with us, you're taking the first step towards simplifying your utility management process and regaining control of your expenses. </h1>
+                <p className="text-white">Here's how signing up with Utility Box can benefit you: </p><br/>
                 <ul className='text-white'>
                     <li className='mb-3 flex gap-3'>
                     <span className='align-self-center'>
                     <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
                     </span>
-                        Consultation Call: This is an opportunity for us to understand your requirements better and
-                        address any questions you may have.
+                        Pricing & Contracting
                     </li>
                     <li className='mb-3 flex gap-3'>
                     <span className='align-self-center'>
                     <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
                     </span>
-                        Personalised Quote: Based on our consultation, we'll provide you with a personalised quote
-                        outlining the services.
+                        Invoice Verification
                     </li>
                     <li className='mb-3 flex gap-3'>
                     <span className='align-self-center'>
                     <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
                     </span>
-                        Decision Time: Take your time to review the quote. If you have any further questions or require
-                        adjustments, we're here to assist.
+                        Energy Consumption
                     </li>
+                    <li className='mb-3 flex gap-3'>
+                    <span className='align-self-center'>
+                    <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
+                    </span>
+                        Meter Reading Reporting
+                    </li>
+                    <li className='mb-3 flex gap-3'>
+                    <span className='align-self-center'>
+                    <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
+                    </span>
+                        Simplified Energy Account Management
+                    </li>
+                    <li className='mb-3 flex gap-3'>
+                    <span className='align-self-center'>
+                    <Image className="mr-5" src="/images/icons/pointcheck1.png" width={20}/>
+                    </span>
+                        Supplier Management
+                    </li>
+                    <li>Ready to take control of your utilities and streamline your expenses? Sign up with Utility Box today and experience the difference firsthand! Let's simplify your utility management journey together.</li>
                 </ul>
             </div>
             <div className="justify-self-end self-center">
@@ -311,7 +350,8 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
                         <div className="w-full d-grid relative justify-content-center">
                             <div className={'inline-block relative'} ref={ref}>
                                 <input type="text" id={`post_code`}
-                                       value={postCode}
+                                    //value={postCode}
+                                       value={offerData.postCode}
                                        placeholder={`Enter Post Code`}
                                        onChange={handlePostCodeChange}
                                        onFocus={handlePostCodeFocus}
@@ -326,47 +366,47 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
                                             <div className="loader-inline"></div>
                                             Searching
                                         </div>}
-                                        {pcDropdown && postcodes?.length > 0 && (
-                                            postcodes?.map((postcode: string, index) => {
-                                                return (
-                                                    <div title={postcode} key={index}
-                                                         onClick={() => postcodeClickHandler(postcode)}
-                                                         className="py-1 custom-option text-left px-3" style={{
-                                                        maxWidth: "24rem",
-                                                        borderBottom: "1px solid gray",
-                                                        backgroundColor: "white"
-                                                    }} placeholder={`Enter postcode.`}>
-                                                        {postcode}
-                                                    </div>
-                                                );
-                                            })
-                                        )}
-                                        {adDropdown && addresses?.length > 0 && (
-                                            addresses?.map((address: any, index) => {
-                                                const meterNumber = address.meternumber ?? '';
-                                                const addressFull = address.addressfull;
-                                                const isHalfHourly = address?.profile == 'half-hourly';
-                                                const isDomestic = address?.profile == 'domestic';
-                                                return (
-                                                    <div title={`${addressFull} - ${meterNumber}`} key={index}
-                                                         onClick={() => addressClickHandler(address)}
-                                                         className="py-1 text-left custom-option px-3" style={{
-                                                        maxWidth: "24rem",
-                                                        borderBottom: "1px solid gray",
-                                                        backgroundColor: "white"
-                                                    }} placeholder={`Enter postcode.`}>
-                                                        <b className='text-lg'>{`${addressFull}`}</b><br/>
-                                                        <span className='text-sm'><b
-                                                            className={`text-${isHalfHourly ? "red" : isDomestic ? "orange" : "green"}-500 font-bold`}>#</b> {`${isHalfHourly ? "Half-Hourly Meter No'" : isDomestic ? "Upgradable Meter No'" : "Meter No'"}`} {`${setMask(meterNumber)}`}</span>
-                                                    </div>
-                                                );
-                                            })
-                                        )}
+                                        {pcDropdown && <div>
+                                            {postcodes?.length > 0 ? (
+                                                postcodes?.map((postcode: string, index) => {
+                                                    return (
+                                                        <div title={postcode} key={index}
+                                                             onClick={() => postcodeClickHandler(postcode)}
+                                                             className="py-0 px-3 border-b border-gray-300 custom-option bg-white text-left"
+                                                        >{postcode}</div>
+                                                    );
+                                                })
+                                            ) : (!isItLoading && <div className="py-1 px-3 border-b border-gray-300 custom-option bg-white text-left">Postcode not found.</div>)}
+                                        </div>}
+                                        {adDropdown && <div>
+                                            {addresses?.length > 0 ? (
+                                                addresses?.map((address: any, index) => {
+                                                    const type = address.type ?? '';
+                                                    const meterNumber = address.meternumber ?? '';
+                                                    const fulladdress = address.fulladdress;
+                                                    const isHalfHourly = address?.profile == 'half-hourly';
+                                                    const isDomestic = address?.profile == 'domestic';
+                                                    return (
+                                                        <div title={`${fulladdress} - ${meterNumber}`} key={index}
+                                                             onClick={() => addressClickHandler(address)}
+                                                             className="py-1 text-left custom-option px-3" style={{
+                                                            maxWidth: "24rem",
+                                                            borderBottom: "1px solid gray",
+                                                            backgroundColor: "white"
+                                                        }}>
+                                                            <b className='text-lg'>{`${fulladdress}`}</b><br/>
+                                                            <span className='text-sm'><b
+                                                                className={`text-${isHalfHourly ? "red" : isDomestic ? "orange" : "green"}-500 font-bold`}>#</b> {`${isHalfHourly ? "Half-Hourly Meter No'" : isDomestic ? "Upgradable Meter No'" : "Meter No'"}`} {`${setMask(meterNumber)}`}</span>
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : (!isItLoading && <div className="py-1 px-3 border-b border-gray-300 custom-option bg-white text-left">Address not found.</div>)}
+                                        </div>}
                                     </div>
                                 }
                             </div>
                             {dealData.site.address && (
-                                <span className="md:w-[24rem] md:px-2 w-[15rem] px-1 py-2 border mt-2">
+                                <span className="md:w-[24rem] md:px-2 w-[22rem] mx-auto px-1 py-2 border mt-2">
                             {dealData.site.address} - {setMask(dealData.smeDetails?.meterNumber)}
                         </span>
                             )}
@@ -392,7 +432,7 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
 
                         <ContactFormMeter onSubmit={afterFormSubmit}/>
 
-                        <div className='d-flex gap-3 mt-4'>
+                        {/*<div className='d-flex gap-3 mt-4'>
                             <div></div>
                             <button onClick={() => setShowDetailModal1(false)}
                                     className="w-full border-blue-btn px-4 py-3 rounded-sm mb-2">
@@ -403,7 +443,7 @@ const ServiceStep: React.FC<ServiceStepProps> = ({onNext, offerData, setOfferDat
                                 Send
                             </button>
                             <div></div>
-                        </div>
+                        </div>*/}
                     </div>
                 </Modal.Body>
             </Modal>

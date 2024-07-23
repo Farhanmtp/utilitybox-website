@@ -17,6 +17,7 @@ interface Props {
 export default function ContactDetails({setData, dealData, isNewCompany, dobRequired, setDealData}: Props) {
 
     const [moveInDate, setMoveInDate] = useState(null);
+    const [showPrevAddress, setShowPrevAddress] = useState(false);
 
     const jobTitles = [
         'Executive Board',
@@ -63,6 +64,13 @@ export default function ContactDetails({setData, dealData, isNewCompany, dobRequ
         setMoveInDate(date);
         const value = date ? dbDateFormat(date) : '';
         setDealData('customer.moveInDate', value || '');
+
+        if (date && moment(date).isAfter(moment().subtract(36, 'months'))) {
+            setShowPrevAddress(true);
+        } else {
+            setShowPrevAddress(false);
+        }
+
     };
 
     function moveInDateRequired() {
@@ -83,8 +91,14 @@ export default function ContactDetails({setData, dealData, isNewCompany, dobRequ
         if (dealData?.customer?.moveInDate) {
             const mid: any = new Date(dealData?.customer?.moveInDate);
             setMoveInDate(mid);
+            if (moment(dealData?.customer.moveInDate).isAfter(moment().subtract(36, 'months'))) {
+                setShowPrevAddress(true);
+            } else {
+                setShowPrevAddress(false);
+            }
         } else {
             setMoveInDate(null);
+            setShowPrevAddress(false);
         }
     }, []);
     return (
@@ -182,10 +196,12 @@ export default function ContactDetails({setData, dealData, isNewCompany, dobRequ
                         onChange={setData}
                     />
                 </div>
-                <div className={'w-full mb-1 col-span-2 lg:col-span-1 field-wrapper'}>
+                {dobRequired() && <div className={'w-full mb-1 col-span-2 lg:col-span-1 field-wrapper'}>
                     <label className='mb-1'>Date of Birth
-                        {dobRequired(false) && <Tooltip title='Why Provide Date of Birth?'>You are required to provide this due to your company being registered below 2 years</Tooltip>}
-                    </label><br/>
+                        {dobRequired(false) &&
+                            <Tooltip title='Why Provide Date of Birth?'>You are required to provide this due to your
+                                company being registered below 2 years</Tooltip>}
+                    </label>
                     <DatePickerField
                         className="input-field-payment"
                         value={dealData.customer.dateOfBirth}
@@ -199,7 +215,7 @@ export default function ContactDetails({setData, dealData, isNewCompany, dobRequ
                             setDealData('customer.dateOfBirth', value);
                         }}
                     />
-                </div>
+                </div>}
                 <div className={'w-full mb-1 col-span-2 lg:col-span-1 field-wrapper'}>
                     <label className='mb-1'>Email Address</label><br/>
                     <input
@@ -237,117 +253,162 @@ export default function ContactDetails({setData, dealData, isNewCompany, dobRequ
                     />
                 </div>
             </div>
-            <hr className="my-4"/>
-            <div className={'mb-2 font-semibold'}>Home Address: <Tooltip title='Why Provide Home Address?'>You are required to provide this due to your company being registered below 2 years</Tooltip></div>
-            <div className="grid md:grid-cols-2 mt-4 gap-4">
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Address Line 1</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.buildingNumber"
-                        required={addressRequired()}
-                        placeholder="Enter Address Line 1"
-                        value={dealData.customer?.buildingNumber}
-                        onChange={setData}
-                    />
-                </div>
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Address Line 2</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.buildingName"
-                        required={addressRequired()}
-                        placeholder="Enter Address Line 2"
-                        value={dealData.customer?.buildingName}
-                        onChange={setData}
-                    />
-                </div>
-                {/*<div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Thoroughfare Name</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.thoroughfareName"
-                        title="Thoroughfare Name*"
-                        required={addressRequired()}
-                        placeholder="Enter Thoroughfare Name"
-                        value={dealData.customer?.thoroughfareName}
-                        onChange={setData}
-                    />
-                </div>*/}
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Post Town</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.postTown"
-                        title="Post Town*"
-                        placeholder="Enter Post Town"
-                        value={dealData.customer?.postTown}
-                        onChange={setData}
-                    />
-                </div>
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>County</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.county"
-                        title="County*"
-                        placeholder="Enter County"
-                        required={addressRequired()}
-                        value={dealData.customer?.county}
-                        onChange={setData}
-                    />
-                </div>
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Post Code</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.postcode"
-                        title="PostCode*"
-                        required={addressRequired()}
-                        placeholder="Enter PostCode"
-                        value={dealData.customer?.postcode}
-                        onChange={setData}
-                    />
-                </div>
-
-                <div className={'w-full mb-1 field-wrapper'}>
-                    <div className='flex gap-0'><label className='mb-1' htmlFor="move-in-date">How long have you been living at this address?</label><Tooltip title='You are required to provide this due to your company being registered below 2 years'/></div>
-                    <DatePicker
-                        className="input-field-payment disabled"
-                        selected={moveInDate}
-                        onChange={(date) => handleMoveInDateChange(date)}
-                        required={moveInDateRequired()}
-                        title="Moved in date"
-                        placeholderText="Moved in date"
-                        maxDate={moment().toDate()}
-                        dateFormat="dd/MM/yyyy"
-                        shouldCloseOnSelect={true}
-                        id='move-in-date'
-                        showYearDropdown={true}
-                        showMonthDropdown={true}
-                    />
+            {addressRequired() && (<>
+                <hr className="my-4"/>
+                <div className={'mb-2 font-semibold'}>Home Address: <Tooltip title='Why Provide Home Address?'>You are
+                    required to provide this due to your company being registered below 2 years</Tooltip></div>
+                <div className="grid md:grid-cols-2 mt-4 gap-4">
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <label className='mb-1'>Address Line 1</label><br/>
+                        <input
+                            className="input-field-payment"
+                            type="text"
+                            name="customer.buildingNumber"
+                            required={addressRequired()}
+                            placeholder="Enter Address Line 1"
+                            value={dealData.customer?.buildingNumber}
+                            onChange={setData}
+                        />
+                    </div>
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <label className='mb-1'>Address Line 2</label><br/>
+                        <input
+                            className="input-field-payment"
+                            type="text"
+                            name="customer.buildingName"
+                            //required={addressRequired()}
+                            placeholder="Enter Address Line 2"
+                            value={dealData.customer?.buildingName}
+                            onChange={setData}
+                        />
+                    </div>
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <label className='mb-1'>Post Town</label><br/>
+                        <input
+                            className="input-field-payment"
+                            type="text"
+                            name="customer.postTown"
+                            title="Post Town*"
+                            placeholder="Enter Post Town"
+                            value={dealData.customer?.postTown}
+                            onChange={setData}
+                        />
+                    </div>
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <label className='mb-1'>County</label><br/>
+                        <input
+                            className="input-field-payment"
+                            type="text"
+                            name="customer.county"
+                            title="County*"
+                            placeholder="Enter County"
+                            required={addressRequired()}
+                            value={dealData.customer?.county}
+                            onChange={setData}
+                        />
+                    </div>
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <label className='mb-1'>Post Code</label><br/>
+                        <input
+                            className="input-field-payment"
+                            type="text"
+                            name="customer.postcode"
+                            title="PostCode*"
+                            required={addressRequired()}
+                            placeholder="Enter PostCode"
+                            value={dealData.customer?.postcode}
+                            onChange={setData}
+                        />
+                    </div>
+                    <div className={'w-full mb-1 field-wrapper'}>
+                        <div className='flex gap-0'><label className='mb-1' htmlFor="move-in-date">How long have you
+                            been
+                            living at this address?</label><Tooltip
+                            title='You are required to provide this due to your company being registered below 2 years'/>
+                        </div>
+                        <DatePicker
+                            className="input-field-payment disabled"
+                            selected={moveInDate}
+                            onChange={(date) => handleMoveInDateChange(date)}
+                            required={moveInDateRequired()}
+                            title="Moved in date"
+                            placeholderText="Moved in date"
+                            maxDate={moment().toDate()}
+                            dateFormat="dd/MM/yyyy"
+                            shouldCloseOnSelect={true}
+                            id='move-in-date'
+                            showYearDropdown={true}
+                            showMonthDropdown={true}
+                        />
+                    </div>
                 </div>
 
-                {/*{dealData?.customer.moveInDate && <div className={'w-full mb-1 field-wrapper'}>
-                    <label className='mb-1'>Previous Address</label><br/>
-                    <input
-                        className="input-field-payment"
-                        type="text"
-                        name="customer.previousAddress"
-                        title="PostCode*"
-                        required={dealData?.customer.moveInDate}
-                        placeholder="Enter Previous Address"
-                        value={dealData.customer?.previousAddress}
-                        onChange={setData}
-                    />
-                </div>}*/}
-            </div>
+                {showPrevAddress && <>
+                    <div className={'mb-2 font-semibold'}>Previous Address:</div>
+                    <div className="grid md:grid-cols-2 mt-4 gap-4">
+                        <div className={'w-full mb-1 field-wrapper'}>
+                            <label className='mb-1'>Address Line 1</label><br/>
+                            <input
+                                className="input-field-payment"
+                                type="text"
+                                name="customer.previousAddress.buildingNumber"
+                                required={true}
+                                placeholder="Enter Address Line 1"
+                                value={dealData.customer?.previousAddress?.buildingNumber}
+                                onChange={setData}
+                            />
+                        </div>
+                        <div className={'w-full mb-1 field-wrapper'}>
+                            <label className='mb-1'>Address Line 2</label><br/>
+                            <input
+                                className="input-field-payment"
+                                type="text"
+                                name="customer.previousAddress.buildingName"
+                                //required={true}
+                                placeholder="Enter Address Line 2"
+                                value={dealData.customer?.previousAddress?.buildingName}
+                                onChange={setData}
+                            />
+                        </div>
+                        <div className={'w-full mb-1 field-wrapper'}>
+                            <label className='mb-1'>Post Town</label><br/>
+                            <input
+                                className="input-field-payment"
+                                type="text"
+                                name="customer.previousAddress.postTown"
+                                placeholder="Enter Post Town"
+                                value={dealData.customer?.previousAddress?.postTown}
+                                onChange={setData}
+                            />
+                        </div>
+                        <div className={'w-full mb-1 field-wrapper'}>
+                            <label className='mb-1'>County</label><br/>
+                            <input
+                                className="input-field-payment"
+                                type="text"
+                                name="customer.previousAddress.county"
+                                placeholder="Enter County"
+                                required={true}
+                                value={dealData.customer?.previousAddress?.county}
+                                onChange={setData}
+                            />
+                        </div>
+                        <div className={'w-full mb-1 field-wrapper'}>
+                            <label className='mb-1'>Post Code</label><br/>
+                            <input
+                                className="input-field-payment"
+                                type="text"
+                                name="customer.previousAddress.postcode"
+                                title="PostCode*"
+                                required={true}
+                                placeholder="Enter PostCode"
+                                value={dealData.customer?.previousAddress?.postcode}
+                                onChange={setData}
+                            />
+                        </div>
+                    </div>
+                </>}
+            </>)}
         </>
     );
 };

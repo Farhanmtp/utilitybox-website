@@ -17,7 +17,9 @@ return [
     'except' => [
         '_debugbar.*',
         'horizon.*',
+        'env-editor.*',
         'admin.*',
+        'webhooks.*',
         'filemanager.*',
         'livewire.*'
     ],

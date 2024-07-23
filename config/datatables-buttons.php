@@ -59,14 +59,7 @@ return [
     'parameters' => [
         'dom' => 'Bfrtip',
         'order' => [[0, 'desc']],
-        'buttons' => [
-            'excel',
-            'csv',
-            'pdf',
-            'print',
-            'reset',
-            'reload',
-        ],
+        'buttons' => [],
     ],
 
     /*
@@ -81,7 +74,7 @@ return [
         /*
          * Default buttons to generate when not set.
          */
-        'buttons' => 'excel,csv,pdf,print,reset,reload',
+        'buttons' => '',
 
         /*
          * Default DOM to generate when not set.

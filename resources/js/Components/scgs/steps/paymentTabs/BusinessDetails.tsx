@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Tooltip from "@/Components/elements/Tooltip";
-import {format_date} from "@/utils/helper";
 import Partnership from "@/Components/scgs/steps/paymentTabs/Partnership";
-import moment from "moment";
-import DatePickerField from "@/Components/elements/DatePickerField";
 
 interface Props {
     dealData?: any,
@@ -15,7 +12,14 @@ interface Props {
 }
 
 
-export default function BusinessDetails({setData, dealData, setDealData, setOfferData, dobRequired, setCompanyAddress}: Props) {
+export default function BusinessDetails({
+                                            setData,
+                                            dealData,
+                                            setDealData,
+                                            setOfferData,
+                                            dobRequired,
+                                            setCompanyAddress
+                                        }: Props) {
     const [companies, setCompanies] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -32,7 +36,6 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
             type: value,
             buildingNumber: '',
             buildingName: '',
-            subBuildingName: '',
             thoroughfareName: '',
             postTown: '',
             county: '',
@@ -100,7 +103,18 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
     return (
         <>
             <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className={'col-span-2'}>
+                {dealData.company.type ? <div className={'col-span-2'}>
+                    <label className='mb-2'>Company Type</label><br/>
+                    <div className={'w-full mb-1'}>
+                        <span className={`btn-radio disable ${dealData.company.type == 'Limited' ? 'active' : ''}`}>
+                             Private Limited </span>
+                        <span className={`btn-radio disable ${dealData.company.type == 'SoleTrader' ? 'active' : ''}`}>
+                             Sole Traders </span>
+                        <span
+                            className={`btn-radio disable ${dealData.company.type == 'LimitedLiabilityPartnership' ? 'active' : ''}`}>
+                             LLP </span>
+                    </div>
+                </div> : <div className={'col-span-2'}>
                     <label className='mb-2'>Company Type</label><br/>
                     <div className={'w-full mb-1'}>
                         <label className={`btn-radio ${dealData.company.type == 'Limited' ? 'active' : ''}`}>
@@ -117,14 +131,16 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                                 checked={dealData.company.type === 'SoleTrader'} onChange={handleCompanyTypeClick}
                             /> Sole Traders </label>
 
-                        <label className={`btn-radio ${dealData.company.type == 'LimitedLiabilityPartnership' ? 'active' : ''}`}>
+                        <label
+                            className={`btn-radio ${dealData.company.type == 'LimitedLiabilityPartnership' ? 'active' : ''}`}>
                             <input
                                 className='ml-0' type="radio" name="company.type"
                                 value="LimitedLiabilityPartnership"
-                                checked={dealData.company.type === 'LimitedLiabilityPartnership'} onChange={handleCompanyTypeClick}
+                                checked={dealData.company.type === 'LimitedLiabilityPartnership'}
+                                onChange={handleCompanyTypeClick}
                             /> LLP </label>
                     </div>
-                </div>
+                </div>}
             </div>
             {dealData.company.type === 'LimitedLiabilityPartnership' ? (
                 <Partnership setData={setData} dealData={dealData} setDealData={setDealData}/>
@@ -149,14 +165,16 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                                     title="Company Name*"
                                     placeholder="Company Name*"
                                     value={dealData.company?.name}
+                                    readOnly={dealData.company?.name}
                                     onChange={(e) => {
                                         setData(e);
                                         setCompanyName(e.target.value);
                                     }}
                                 />
                                 {(showDropdown || isLoading || companies?.length > 0) &&
-                                    <div className="bg-white border absolute right-0 left-0 z-10 lead top-100 max-h-[300px] overflow-auto"
-                                         id="dropdown">
+                                    <div
+                                        className="bg-white border absolute right-0 left-0 z-10 lead top-100 max-h-[300px] overflow-auto"
+                                        id="dropdown">
                                         {isLoading && <div className="text-left p-3">
                                             <div className="loader-inline"></div>
                                             Searching
@@ -167,8 +185,11 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                                                     <div title={company?.title} key={index}
                                                          onClick={() => companyClickHandler(company)}
                                                          className="py-1 custom-option text-left px-3"
-                                                         style={{maxWidth: "24rem", borderBottom: "1px solid gray", backgroundColor: "white"}}
-                                                         placeholder={`Enter postcode.`}>
+                                                         style={{
+                                                             maxWidth: "24rem",
+                                                             borderBottom: "1px solid gray",
+                                                             backgroundColor: "white"
+                                                         }}>
                                                         {company?.title}
                                                     </div>
                                                 );
@@ -191,7 +212,7 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                                 onChange={setData}
                             />
                         </div>
-                        <div className={'w-full col-span-2 d-flex'}>
+                        <div className={'w-full col-span-2 d-flex items-center'}>
                             <label className={`checkbox my-2.5`}>
                                 <input
                                     className={`mr-2`}
@@ -208,10 +229,12 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                     </>}
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                    {(dealData.company.type == 'SoleTrader' || dobRequired(false)) &&
+                    {/*{(dealData.company.type == 'SoleTrader' || dobRequired(false)) &&
                         <div className={'w-full col-span-2 lg:col-span-1 field-wrapper'}>
                             <label className='mb-1'>Date of Birth
-                                {dobRequired(false) && <Tooltip title='Why Provide Date of Birth?'>You are required to provide this due to your company being registered below 2 years</Tooltip>}
+                                {dobRequired(false) &&
+                                    <Tooltip title='Why Provide Date of Birth?'>You are required to provide this due to
+                                        your company being registered below 2 years</Tooltip>}
                             </label><br/>
                             <DatePickerField
                                 className="input-field-payment"
@@ -226,7 +249,7 @@ export default function BusinessDetails({setData, dealData, setDealData, setOffe
                                     setDealData('customer.dateOfBirth', value);
                                 }}
                             />
-                        </div>}
+                        </div>}*/}
 
                     {dealData.company.type == 'SoleTrader' &&
                         <div className={'w-full col-span-2 lg:col-span-1'}>

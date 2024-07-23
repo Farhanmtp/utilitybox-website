@@ -24,22 +24,16 @@
 </div>
 
 <div class="row billingAddress">
-    <div class="col-md-3">
+    <div class="col-md-6">
         <div class="form-group">
-            <label class="control-label">Building Number</label>
+            <label class="control-label">Address Line 1</label>
             <input class="form-control buildingNumber" type="text" name="billingAddress[buildingNumber]" value="{{data_get($deal,'billingAddress.buildingNumber')}}">
         </div>
     </div>
     <div class="col-md-6">
         <div class="form-group">
-            <label class="control-label">Building Name</label>
+            <label class="control-label">Address Line 2</label>
             <input class="form-control buildingName" type="text" name="billingAddress[buildingName]" value="{{data_get($deal,'billingAddress.buildingName')}}">
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label">Sub-Building Name</label>
-            <input class="form-control subBuildingName" type="text" name="billingAddress[subBuildingName]" value="{{data_get($deal,'billingAddress.subBuildingName')}}">
         </div>
     </div>
     <div class="col-md-6">
@@ -79,7 +73,6 @@
         $(function () {
             var _address_fields = [
                 'buildingName',
-                'subBuildingName',
                 'buildingNumber',
                 'thoroughfareNumber',
                 'county',

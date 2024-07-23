@@ -5,7 +5,7 @@ import { Button, Image } from "react-bootstrap"
 export function CTA() {
     return(
         <div className="cta-btn">
-        <Link href="/swift-contract-generation-system" >
+        <Link href={route('contract')} >
             <Button className="btn-cta border-none rounded-2">
                 <Image style={{marginRight:"15px"}} src="/images/icons/cta.png" width="35px" /><span>Generate Contract</span>
             </Button>

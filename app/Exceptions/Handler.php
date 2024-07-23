@@ -77,7 +77,9 @@ class Handler extends ExceptionHandler
                 'message' => $e->getMessage(),
             ];
 
-            if (!app()->isProduction()) {
+            if ($code == 422) {
+                $json['errors'] = $e->errors();
+            } elseif (!app()->isProduction()) {
                 $json['file'] = $e->getFile();
                 $json['line'] = $e->getLine();
             }
@@ -110,7 +112,6 @@ class Handler extends ExceptionHandler
 
         return parent::render($request, $e);
     }
-
 
     /**
      * Get the view used to render HTTP exceptions.

@@ -8,6 +8,10 @@ use App\Http\Integrations\Powwr\Requests\SubmitQuoteRequest;
 use App\Http\Requests\Api\LoginRequest;
 use Illuminate\Http\Request;
 
+/**
+ * @group Powwr
+ * @unauthenticated
+ */
 class QuoteController extends ApiController
 {
     use BaseTrait;

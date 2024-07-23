@@ -102,11 +102,27 @@
                         </ul>
                     </li>
                 @endif
+                @if(hasPermission('forms.view'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.messages.index') }}" class="nav-link {{ isActive('messages') }}">
+                            <i class="nav-icon fas fa-list-alt"></i>
+                            <p>Messages</p>
+                        </a>
+                    </li>
+                @endif
                 @if(hasPermission('settings.view'))
                     <li class="nav-item">
                         <a href="{{ route('admin.settings.index') }}" class="nav-link {{ isActive('settings') }}">
                             <i class="nav-icon fas fa-cogs"></i>
                             <p>Settings</p>
+                        </a>
+                    </li>
+                @endif
+                @if(hasPermission('super-admin'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.clear-cache') }}" class="nav-link">
+                            <i class="nav-icon fas fa-sync"></i>
+                            <p>Clear Cache</p>
                         </a>
                     </li>
                 @endif

@@ -97,15 +97,15 @@ export function LoginPopUp({
                   </div>
 
                   <div className="block mt-4">
-                    <label className="d-xl-flex sm:justify-between">
-                      <span className="text-sm text-gray-600">
+                    <div className="d-xl-flex sm:justify-between">
+                      <label className="text-sm text-gray-600">
                         <Checkbox
                           name="remember"
                           checked={data.remember}
                           onChange={(e) => setData('remember', e.target.checked)}
                         />{' '}
                         Remember for 30 days
-                      </span>
+                      </label>
                       <br />
                       {canResetPassword && (
                         <Link
@@ -115,7 +115,7 @@ export function LoginPopUp({
                           Forgot your password?
                         </Link>
                       )}
-                    </label>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-end mt-4">

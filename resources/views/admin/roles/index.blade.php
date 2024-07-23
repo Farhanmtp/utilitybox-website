@@ -8,6 +8,9 @@
                 </div>
                 <div class="col-6 text-right">
                     @if(hasPermission('roles.create'))
+                        <a href="{{ route('admin.roles.reset-permissions') }}" class="btn btn-primary"><i class="fa fa-sync"></i> Reset Permissions</a>
+                    @endif
+                    @if(hasPermission('roles.create'))
                         <a href="{{ route('admin.roles.create') }}" class="btn btn-primary"><i class="fa fa-plus"></i> Add Role</a>
                     @endif
                 </div>

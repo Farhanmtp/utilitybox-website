@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 trait ApiResponse
 {
@@ -14,29 +15,36 @@ trait ApiResponse
             $data = [];
         }
 
-        $pagination = [];
-        if ($data instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            $pagination['current_page'] = $data->currentPage();
-            $pagination['last_page'] = $data->lastPage();
-            $pagination['total_record'] = $data->total();
-            $pagination['per_page'] = $data->perPage();
-            $pagination['to'] = $data->lastItem();
-            $data = $data->getCollection();
-        }
-
-        if ($data instanceof Arrayable) {
-            $data = $data->toArray();
-        }
-
-        $response = [
-            'success' => true,
-            'message' => $message,
-            'data' => $data
+        $output = [
+            'status' => true,
+            'message' => $message ?: (str_replace('Controller', '', class_basename($this)) . ' data loaded'),
         ];
 
-        $response = array_merge($response, $pagination);
+        if ($data instanceof AnonymousResourceCollection) {
+            $response = $data->toResponse(request());
+            $responseData = $response->getData(true);
 
-        return response()->json($response, $code);
+            if (isset($responseData['data'])) {
+                $output += $responseData;
+            } else {
+                $output['data'] = $responseData;
+            }
+        } elseif ($data instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $output['current_page'] = $data->currentPage();
+            $output['last_page'] = $data->lastPage();
+            $output['total_record'] = $data->total();
+            $output['per_page'] = $data->perPage();
+            $output['to'] = $data->lastItem();
+            $output['data'] = $data->getCollection()->toArray();
+        } else {
+            if ($data instanceof Arrayable) {
+                $data = $data->toArray();
+            }
+
+            $output['data'] = $data;
+        }
+
+        return response()->json($output, $code);
     }
 
     protected function errorResponse($message, $code, $errors = []): JsonResponse

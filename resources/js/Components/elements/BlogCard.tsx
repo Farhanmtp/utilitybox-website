@@ -15,7 +15,7 @@ export function BlogCard({title, image, url}: ArticleCardProps) {
             <Link style={{textDecoration: "none"}} href={url}>
                 <div className="containers rounded-3">
                     <div className="rounded-3 p-4 d-flex align-items-end blogImg" style={{backgroundImage: `linear-gradient(to bottom, #1e1e1e00, #1e1e1e),url(${image})`}}>
-                        <h5 className="text-grey text-18">{title}</h5>
+                        <h5 className="text-grey text-18 font-medium">{title}</h5>
                     </div>
                 </div>
             </Link>

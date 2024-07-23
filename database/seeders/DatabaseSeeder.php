@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SettingTableSeeder::class,
-            PowwrSuppliersTable::class,
+            SuppliersTable::class,
             RolesTableSeeder::class,
             UserTableSeeder::class,
             CategoryTableSeeder::class,

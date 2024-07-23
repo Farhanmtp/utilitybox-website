@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Traits\ActiveTrait;
+use App\Notifications\EmailVerificationNotification;
 use App\Notifications\ResetPasswordNotification;
+use App\Observers\UserObserver;
+use App\Traits\UtilsTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,9 +20,9 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasRoles, HasPermissions, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, HasPermissions, Notifiable, ActiveTrait, UtilsTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -28,12 +32,14 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
+        'job_title',
         'email',
         'username',
         'password',
         'gender',
         'date_of_birth',
         'phone',
+        'mobile',
         'address',
         'address2',
         'city',
@@ -64,9 +70,16 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        User::observe(UserObserver::class);
+    }
+
     public function deals()
     {
-        return $this->hasMany(PowwrDeals::class);
+        return $this->hasMany(Deals::class);
     }
 
     protected function dateOfBirth()
@@ -75,7 +88,6 @@ class User extends Authenticatable
             $this->attributes['date_of_birth'] = date('Y-m-d', strtotime($value));
         });
     }
-
 
     public function getNameAttribute($value)
     {
@@ -87,6 +99,9 @@ class User extends Authenticatable
         if ($this->avatar && Storage::exists($this->avatar)) {
             return Storage::url($this->avatar);
         } else {
+            if ($this->gender == 'female') {
+                return asset('images/avatar2.png');
+            }
             return asset('images/avatar.png');
         }
     }
@@ -162,5 +177,10 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function sendEmailVerificationNotification($deal = null)
+    {
+        $this->notify(new EmailVerificationNotification($deal));
     }
 }

@@ -7,15 +7,15 @@ interface Props {
 }
 
 export function SelectButton({title, link}: Props) {
-    const buttonText = title === 'Electricity' ? '/images/icons/electric.png' : title === 'Gas' ? '/images/icons/gas.png' : '';
+    const buttonText = title === 'Electricity' ? '/images/icons/electricity.png' : title === 'Gas' ? '/images/icons/gas-new.png' : '';
 
     return(
         <>
         <Link href={link} >
             <div className=" selectbutton rounded-3">
-                <div className="p-3 bg-blue rounded-3 mb-4" style={{width:"fit-content"}}>
-                    <Image src={buttonText} />
-                </div>
+                    <div className="mb-4" style={{ width: "fit-content" }}>
+                        <Image src={buttonText} style={{ width: 80 }} />
+                    </div>
                 <h5>{title}</h5>
             </div>
         </Link>

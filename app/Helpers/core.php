@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 /**
  * @param string|null $key
  * @param $default
@@ -14,6 +17,14 @@ function settings(string $key = null, $default = null): mixed
     return config('settings');
 }
 
+if (!function_exists('dbRaw')) {
+    function dbRaw(string $query, string $connection = null)
+    {
+        $expression = DB::raw($query);
+
+        return $expression->getValue(DB::connection($connection)->getQueryGrammar());
+    }
+}
 if (!function_exists('formatDate')) {
     /**
      * @param $date
@@ -44,36 +55,66 @@ function isJson($string)
     return !empty($string) && is_string($string) && is_array(json_decode($string, true)) && json_last_error() == 0;
 }
 
-function array_filter_recursive(array $array, callable $callback = null)
-{
-    $array = is_callable($callback) ? array_filter($array, $callback) : array_filter($array);
-    foreach ($array as $key => &$value) {
-        if (is_array($value)) {
-            $value = call_user_func(__FUNCTION__, $value, $callback);
+if (!function_exists('array_filter_recursive')) {
+    function array_filter_recursive(array $array, callable $callback = null)
+    {
+        $array = is_callable($callback) ? array_filter($array, $callback) : array_filter($array);
+        foreach ($array as $key => &$value) {
+            if (is_array($value)) {
+                $value = call_user_func(__FUNCTION__, $value, $callback);
 
-            if (empty($value)) {
-                unset($array[$key]);
+                if (empty($value)) {
+                    unset($array[$key]);
+                }
             }
         }
-    }
 
-    return $array;
+        return $array;
+    }
+}
+if (!function_exists('mask_string')) {
+    function mask_string(string $string, $visible = null)
+    {
+        $length = strlen($string);
+
+        $visibleCount = $visible ?: (int)round($length / 4);
+        $hiddenCount = $length - ($visibleCount * 2);
+
+        if ($length <= ($visible * 2)) {
+            return $string;
+        }
+
+        $prefix = substr($string, 0, $visibleCount);
+        $suffix = substr($string, ($visibleCount * -1), $visibleCount);
+        $mask = str_repeat('*', $hiddenCount);
+
+        return $prefix . $mask . $suffix;
+    }
 }
 
-function mask_string(string $string, $visible = null)
+if (!function_exists('storage')) {
+    /**
+     * @param $disk
+     * @return \Illuminate\Contracts\Filesystem\Filesystem
+     */
+    function storage($disk = 'public'): \Illuminate\Contracts\Filesystem\Filesystem
+    {
+        return Storage::disk($disk);
+    }
+}
+
+function in_arrayi($needle, $haystack)
 {
-    $length = strlen($string);
+    return in_array(strtolower($needle), array_map('strtolower', $haystack));
+}
 
-    $visibleCount = $visible ?: (int)round($length / 4);
-    $hiddenCount = $length - ($visibleCount * 2);
-
-    if ($length <= ($visible * 2)) {
-        return $string;
+function num_pad(int|float $number, int $length, int $pad_number = 0, int $pad_type = 1)
+{
+    if (\Illuminate\Support\Str::contains($number, '.') && $pad_type == 0) {
+        list($num, $dec) = explode('.', $number);
+        return str_pad($num, $length, $pad_number, $pad_type) . '.' . $dec;
     }
 
-    $prefix = substr($string, 0, $visibleCount);
-    $suffix = substr($string, ($visibleCount * -1), $visibleCount);
-    $mask = str_repeat('*', $hiddenCount);
-
-    return $prefix . $mask . $suffix;
+    return str_pad($number, $length, $pad_number, $pad_type);
 }
+

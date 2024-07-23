@@ -20,16 +20,15 @@ export function Footer() {
                             {app.address &&
                                 <p className="mb-4">{app.address}</p>
                             }
-                            {app.phone &&
-                                <a href={"tel:" + app.phone}><p className="mb-4">{app.phone}</p></a>
-                            }
+                            
+                            <a href="tel:0203 921 9000"><p className="mb-4">0203 921 9000</p></a>
+                            
                             {app.email &&
-                                <a href={"mailto:" + app.email}><p className="mb-4">{app.email}</p></a>
+                                <a href={"mailto:" + app.email}><p className="mb-4">hello@utilitybox.org.uk</p></a>
                             }
                         </div>
                         <div className="col-sm">
                             <h4 className="mb-4">Navigate</h4>
-                            <Link className="mb-3 d-block" href="/">Home</Link>
                             <Link className="mb-3 d-block" href="/about">About</Link>
                             <Link className="mb-3 d-block" href="/">Open-the-box</Link>
                             <Link className="mb-3 d-block" href="/contact">Contact</Link>

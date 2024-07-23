@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\UtilsTrait;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission as OriginalPermission;
 
 class Permission extends OriginalPermission
 {
-    use HasFactory;
-
+    use UtilsTrait;
 
     protected static function boot()
     {
@@ -132,6 +131,11 @@ class Permission extends OriginalPermission
             "deals.edit",
             "deals.delete",
 
+            "forms.view",
+            //"forms.create",
+            //"forms.edit",
+            "forms.delete",
+
             "suppliers.view",
             "suppliers.create",
             "suppliers.edit",
@@ -141,7 +145,6 @@ class Permission extends OriginalPermission
             "settings.view",
         ];
     }
-
 
     /**
      * @return string[]

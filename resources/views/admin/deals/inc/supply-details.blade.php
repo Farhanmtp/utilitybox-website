@@ -75,25 +75,19 @@
     </div>
 </div>
 <div class="row site">
-    <div class="col-md-3">
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Number</label>
+            <label class="control-label">Address Line 1</label>
             <input class="form-control buildingNumber" type="text" name="site[buildingNumber]" value="{{data_get($deal,'site.buildingNumber')}}">
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="form-group">
-            <label class="control-label">Building Name</label>
+            <label class="control-label">Address Line 2</label>
             <input class="form-control buildingName" type="text" name="site[buildingName]" value="{{data_get($deal,'site.buildingName')}}">
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="form-group">
-            <label class="control-label">Sub-Building Name</label>
-            <input class="form-control subBuildingName" type="text" name="site[subBuildingName]" value="{{data_get($deal,'site.subBuildingName')}}">
-        </div>
-    </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="form-group">
             <label class="control-label">Thoroughfare Name</label>
             <input class="form-control" type="text" name="site[thoroughfareName]" value="{{data_get($deal,'site.thoroughfareName')}}">
