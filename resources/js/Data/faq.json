@@ -1,0 +1,72 @@
+[
+    {
+        "id" : 1,
+        "title" : "What is Utility Box?",
+        "meta" : "<p>Utility Box is a Total Utility Management Solutions provider. It is UK's first company to provide Business Utility Management as a Service.</p>\n\n<p>Utility Box specialises in Utility Audits, Meter Reads, Usage Audits, Change of Tenancies, and Contract Renewals for businesses that lack the time, resources, or knowledge to conduct their own audits. We thoroughly examine your present setup to give you deals and recommendations that will save your time and money.</p>"
+    },
+    {
+        "id" : 2,
+        "title" : "How easy is it to switch with the Utility Box?",
+        "meta" : "Very simple!<br>Utility Box is a one-stop service and portal that is accessible 24/7. So, forget about 'business hours,' brokers, and commission-laden comparison sites. Our service is a significantly more convenient and efficient method to switch and then manage every part of your energy account - at a time and in a way that works for you. With the assistance of our skilled energy technology staff that give a delightfully simple service, you can get everything resolved online in a matter of seconds."
+    },
+    {
+        "id" : 3,
+        "title" : "What payment methods do you offer?",
+        "meta" : "We prefer monthly Direct Debit payments because they are less of a nuisance for consumers and are simple to administer in your online account."
+    },
+    {
+        "id" : 4,
+        "title" : "Do I have to inform my current supplier that I am switching?",
+        "meta" : "Yes, you must ensure that you have terminated your previous contract if you want to live a simpler life and get your business energy up and running. Each energy supplier will have slightly different termination rules, so if you're unsure, contact them (one last phone call!). However, the good news is that you can still transfer to Utility Box today if you cancel your contract within your existing energy provider's statutory termination deadline (this is usually between 28 days and 3 months before the contract ends)."
+    },
+    {
+        "id": 5,
+        "title": "What is average business energy usage?",
+        "meta": "The average amount of energy consumed by a business is determined by its size, as well as how and why it utilises energy.<br>Here are the average energy consumption estimates for SMEs and large organisations to give you a fair sense of how much energy your firm should be using:<br>○ Micro Businesses will use 10,000 kWh of gas and up to 15,000 kWh of electricity a year<br>○ Small businesses will use 25,000 kWh of gas and up to 25,000 kWh of electricity a year<br>○ Medium-sized businesses will use 45,000 kWh of gas and up to 50,000 kWh of electricity a year<br>○ Large businesses will use around 80,000 kWh of electricity a year"     
+    },
+        {
+        "id" : 6,
+        "title" : "My business gas is supplied by an independent gas transporter (IGT), can I still make the switch with Utility Box?",
+        "meta" : "Yes! If you are being supplied by an Independent Gas Transporter (IGT), you can still make the switch with Utility Box with no extra cost! You can check if you are supplied by an IGT by checking gas supply point numbers or MPRN on your bills. If they are starting with 74, 75, 76, or 77, then you will be supplied by an IGT."
+    },
+    {
+        "id" : 7,
+        "title" : "Do I have to change my gas meter after switching?",
+        "meta" : "If you have a normal meter, it is unlikely that it will need to be replaced. If you have a smart meter, you may need to change it if it isn't compatible with your new supplier."
+    },
+    {
+        "id" : 8,
+        "title" : "What should be average gas consumption for my UK business?",
+        "meta" : "You can know how much average gas your business should consume annually by getting information on how much energy other businesses of your size are consuming.<br><br>• Micro Business will use from 5000 kWh to 15,000 kWh of gas per year<br>• Small Business will use from 15,000 kWh to 30,000 kWh of gas per year<br>• Medium Business will use from 30,000 kWh to 65,000 kWh of gas per year<br>• Large Businesses will use more than 65,000 kWh of gas per year."
+    },
+    {
+        "id" : 9,
+        "title" : "What types of energy businesses deals are available?",
+        "meta" : "When switching to a new business energy deal with Utility Box, there are four main types of tariffs to choose from: <br> ● Fixed term business gas and electricity tariffs <br> ● Blend and extend tariffs <br> ● Flex approach tariffs <br> ● Pass through tariffs <br> Each is designed to meet the different needs of business energy users."
+    },
+    {
+        "id" : 10,
+        "title" : "How can I identify my business gas meter?",
+        "meta" : "MPRN can be used to identify a business gas meter. It is a one-of-a-kind number for the gas meter. It can have up to 11 digits and is used to identify the metre at a company. It may be found on the business gas bill under the title 'Details of costs.'<br><br>You may also look for your MPRN online by entering your postcode at Find My Supplier or calling the metre number helpline at 0870 608 1524. To supply you with your MPRN and current gas provider information, they simply require your company postcode and the first line of your address."
+    },
+    {
+        "id" : 11,
+        "title" : "What is a deemed contract?",
+        "meta" : "When switching to a new business energy deal with Utility Box, there are four main types of tariffs to choose from:<br><br>● Fixed term business gas and electricity tariffs<br>● Blend and extend tariffs<br>● Flex approach tariffs<br>● Pass through tariffs<br>Each is designed to meet the different needs of business energy users."
+    },
+    {
+        "id" : 12,
+        "title" : "What is Letter of Authority (LOA)?",
+        "meta" : "You must sign a Letter of Authority when comparing business energy rates and switching with us. It is a recognised legal document, follows a standard structure and specifies that while a third party can gather information, negotiate, and send notice of termination on your behalf, they do not have the authority to enter a contract without your approval.<br><br>Signing this letter certifies that you've given us permission to manage the changeover with both your old and new providers when you join up with UTILITY BOX. We cannot enter a contract on your behalf until you have signed the LOA. This ensures you retain full control of the switch."
+    },
+    {
+        "id" : 13,
+        "title" : "What will we need from you?",
+        "meta" : "● One month's utility or utilities invoice that you would like us to review<br>● A Letter of Authorisation on your company's letterhead."
+    },
+    {
+        "id" : 14,
+        "title" : "What will happen if you discover I am being over billed?",
+        "meta" : "<p>If we discover you've been over billed, we will work to procure a full refund and renegotiate your bill to ensure future billing is accurate.<br>An account manager who will deliver tailored advice regarding your specific situation.<br>Recommendations on if you should keep or pass-through elements of the full-delivered price, for example, extra charges may be brought in by the Electricity Market Reform and we then compare different complex quotes so you can compare like-for-like contracts.</p>"
+    }
+]

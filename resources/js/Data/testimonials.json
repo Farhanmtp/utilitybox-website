@@ -1,0 +1,26 @@
+[
+    {
+        "id" : 1,
+        "name" : "Andrew Maben",
+        "title" : "AC Maben Ltd.",
+        "content" : "... Utility Box offered a seamless service from initial contact to signing contracts with energy suppliers which massively reduced the hours of hassle. They helped us in achieving competitive rates for our company's gas and electricity."
+    },
+    {
+        "id" : 2,
+        "name" : "Anjum Mahmood",
+        "title" : "Black Knight Ltd.",
+        "content" : "…. They are wow! The ease in which they handled our electricity renewal from start to end meant they took away all the fuss and faff. I have just subscribed to their Utility Management Services, as it seems like a no brainer. Who wouldn't want someone managing & auditing your Utilities in today's climate"
+    },
+    {
+        "id" : 3,
+        "name" : "John Doe",
+        "title" : "D&A Security Ltd.",
+        "content" : "It is a straightforward, professional & no pressure service."
+    },
+    {
+        "id" : 4,
+        "name" : "Ira",
+        "title" : "UBI Lease Management Ltd.",
+        "content" : "…. One of the best decision's I have probably made this year. Utility Box have simplified our Portfolio management for Utilities and have demonstrated savings against quotations I have received directly from suppliers. They also manage our Change of Tenancies, which means they liaise with the supplier to inform them that a tenant has left, and a new tenant has come in."
+    }
+]
